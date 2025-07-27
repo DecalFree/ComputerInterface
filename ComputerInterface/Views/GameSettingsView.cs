@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.ViewLib;
 using ComputerInterface.Views.GameSettings;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace ComputerInterface.Views
 {
@@ -15,29 +16,44 @@ namespace ComputerInterface.Views
 
     public class GameSettingsView : ComputerView
     {
+        private readonly UIElementPageHandler<Tuple<string, Type>> _pageHandler;
         private readonly UISelectionHandler _selectionHandler;
+
         private readonly List<Tuple<string, Type>> _gameSettingsViews;
 
         private GameSettingsView()
         {
             _gameSettingsViews = new List<Tuple<string, Type>>
             {
-                new Tuple<string, Type>("Room   ", typeof(JoinRoomView)),
-                new Tuple<string, Type>("Name   ", typeof(NameSettingView)),
-                new Tuple<string, Type>("Color  ", typeof(ColorSettingView)),
-                new Tuple<string, Type>("Turn   ", typeof(TurnSettingView)),
-                new Tuple<string, Type>("Mic    ", typeof(MicSettingsView)),
-                new Tuple<string, Type>("Queue  ", typeof(CustomQueuesView)),
-                new Tuple<string, Type>("Group  ", typeof(GroupView)),
-                new Tuple<string, Type>("Voice  ", typeof(VoiceSettingsView)),
-                new Tuple<string, Type>("Items  ", typeof(ItemSettingsView)),
-                new Tuple<string, Type>("Credits", typeof(CreditsView)),
-                new Tuple<string, Type>("Support", typeof(SupportView)),
+                new("Room   ", typeof(RoomView)),
+                new("Name   ", typeof(NameSettingView)),
+                new("Color  ", typeof(ColorSettingView)),
+                new("Turn   ", typeof(TurnSettingView)),
+                new("Mic    ", typeof(MicSettingsView)),
+                new("Queue  ", typeof(QueueView)),
+                new("Troop  ", typeof(TroopView)),
+                new("Group  ", typeof(GroupView)),
+                new("Voice  ", typeof(VoiceSettingsView)),
+                new("Automod", typeof(AutomodView)),
+                new("Items  ", typeof(ItemSettingsView)),
+                new("Redeem ", typeof(RedemptionView)),
+                new("Credits", typeof(CreditsView)),
+                new("Support", typeof(SupportView)),
             };
+
+            _pageHandler = new UIElementPageHandler<Tuple<string, Type>>(EKeyboardKey.Left, EKeyboardKey.Right)
+            {
+                Footer = "<color=#ffffff50>{0}{1}        <align=\"right\"><margin-right=2em>page {2}/{3}</margin></align></color>",
+                NextMark = "▼",
+                PrevMark = "▲",
+                EntriesPerPage = 11
+            };
+            _pageHandler.SetElements(_gameSettingsViews.ToArray());
 
             _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down, EKeyboardKey.Enter);
             _selectionHandler.OnSelected += ItemSelected;
             _selectionHandler.MaxIdx = _gameSettingsViews.Count - 1;
+            _selectionHandler.ConfigureSelectionIndicator("<color=#ed6540>></color> ", "", "  ", "");
         }
 
         public override void OnShow(object[] args)
@@ -48,13 +64,23 @@ namespace ComputerInterface.Views
 
         private void Redraw()
         {
-            var str = new StringBuilder();
-            str.AppendLine();
-            for (var i = 0; i < _gameSettingsViews.Count; i++)
+            StringBuilder str = new();
+
+            str.BeginCenter().AppendClr("== ", "ffffff50").Append("Game Settings").AppendClr(" ==", "ffffff50").EndAlign().AppendLines(2);
+
+            int lineIdx = _pageHandler.MovePageToIdx(_selectionHandler.CurrentSelectionIndex);
+
+            _pageHandler.EnumarateElements((entry, idx) =>
             {
-                var pair = _gameSettingsViews[i];
-                str.Repeat(" ", _gameSettingsViews.Count - 1).Append(GetSelector(i)).Append(pair.Item1).AppendLine();
+                str.Append(_selectionHandler.GetIndicatedText(idx, lineIdx, entry.Item1));
+                str.AppendLine();
+            });
+
+            for (int i = 0; i < _pageHandler.EntriesPerPage - _pageHandler.ItemsOnScreen; i++)
+            {
+                str.AppendLine();
             }
+            str.Append($"<color=#ffffff50><align=\"center\"><  {_pageHandler.CurrentPage + 1}/{_pageHandler.MaxPage + 1}  ></align></color>");
 
             Text = str.ToString();
         }
@@ -73,11 +99,6 @@ namespace ComputerInterface.Views
                     ReturnToMainMenu();
                     break;
             }
-        }
-
-        private string GetSelector(int idx)
-        {
-            return idx == _selectionHandler.CurrentSelectionIndex ? $"<color=#{PrimaryColor}>> </color>" : "  ";
         }
 
         private void ItemSelected(int idx)

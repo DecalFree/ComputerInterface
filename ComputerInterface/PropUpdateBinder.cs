@@ -6,7 +6,7 @@ namespace ComputerInterface
 {
     internal class PropUpdateBinder
     {
-        private readonly Dictionary<string, Action> _actions = new Dictionary<string, Action>();
+        private readonly Dictionary<string, Action> _actions = new();
 
         public void Bind(string name, Action callback)
         {
@@ -20,7 +20,7 @@ namespace ComputerInterface
 
         public void PropertyChanged(object src, PropertyChangedEventArgs args)
         {
-            if (_actions.TryGetValue(args.PropertyName, out var action))
+            if (_actions.TryGetValue(args.PropertyName, out Action action))
             {
                 action.Invoke();
             }

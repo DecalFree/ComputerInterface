@@ -1,4 +1,5 @@
-﻿using ComputerInterface.ViewLib;
+﻿using ComputerInterface.Extensions;
+using ComputerInterface.ViewLib;
 using System.Text;
 
 namespace ComputerInterface.Views.GameSettings
@@ -32,7 +33,7 @@ namespace ComputerInterface.Views.GameSettings
 
         private void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
             str.Append("Turn Tab").AppendLine();
@@ -64,7 +65,7 @@ namespace ComputerInterface.Views.GameSettings
                         Redraw();
                         return;
                     }
-                    if (key.TryParseNumber(out var num))
+                    if (key.TryParseNumber(out int num))
                     {
                         SetTurnSpeed(num);
                         Redraw();

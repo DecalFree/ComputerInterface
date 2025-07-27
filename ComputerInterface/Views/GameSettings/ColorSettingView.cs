@@ -1,5 +1,6 @@
-using System.Text;
+using ComputerInterface.Extensions;
 using ComputerInterface.ViewLib;
+using System.Text;
 using UnityEngine;
 
 namespace ComputerInterface.Views.GameSettings
@@ -37,7 +38,7 @@ namespace ComputerInterface.Views.GameSettings
 
         private void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
             str.BeginColor(_color).Repeat("=", SCREEN_WIDTH).EndColor().AppendLine();
             str.BeginCenter().Append("Color Tab").AppendLine();
             str.AppendClr("Values are from 0 - 255", "ffffff50").EndAlign().AppendLine();
@@ -98,9 +99,9 @@ namespace ComputerInterface.Views.GameSettings
                 default:
                     if (key.IsNumberKey())
                     {
-                        var line = _selectionHandler.CurrentSelectionIndex;
-                        var column = _columnSelectionHandler.CurrentSelectionIndex;
-                        var numChar = key.ToString().Substring(3)[0];
+                        int line = _selectionHandler.CurrentSelectionIndex;
+                        int column = _columnSelectionHandler.CurrentSelectionIndex;
+                        char numChar = key.ToString().Substring(3)[0];
 
                         switch (line)
                         {
@@ -115,9 +116,9 @@ namespace ComputerInterface.Views.GameSettings
                                 break;
                         }
 
-                        var r = Mathf.Clamp(int.Parse(_rString), 0, 255);
-                        var g = Mathf.Clamp(int.Parse(_gString), 0, 255);
-                        var b = Mathf.Clamp(int.Parse(_bString), 0, 255);
+                        int r = Mathf.Clamp(int.Parse(_rString), 0, 255);
+                        int g = Mathf.Clamp(int.Parse(_gString), 0, 255);
+                        int b = Mathf.Clamp(int.Parse(_bString), 0, 255);
 
                         _rString = r.ToString().PadLeft(3, '0');
                         _gString = g.ToString().PadLeft(3, '0');

@@ -1,14 +1,15 @@
-﻿using System;
+﻿using BepInEx.Configuration;
+using ComputerInterface.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx.Configuration;
 using UnityEngine;
 
 namespace ComputerInterface
 {
     public class CommandHandler
     {
-        private readonly Dictionary<string, Command> _commands = new Dictionary<string, Command>();
+        private readonly Dictionary<string, Command> _commands = new();
 
         public CommandToken AddCommand(Command command)
         {
@@ -19,9 +20,9 @@ namespace ComputerInterface
 
             if (command.ArgumentTypes != null)
             {
-                foreach (var argumentType in command.ArgumentTypes)
+                foreach (Type argumentType in command.ArgumentTypes)
                 {
-                    if(argumentType==null) continue;
+                    if (argumentType == null) continue;
 
                     if (!TomlTypeConverter.CanConvert(argumentType))
                     {
@@ -46,18 +47,18 @@ namespace ComputerInterface
 
             messageString = "";
 
-            var commandStrings = commandString.Split(' ');
-            if (!_commands.TryGetValue(commandStrings[0], out var command))
+            string[] commandStrings = commandString.Split(' ');
+            if (!_commands.TryGetValue(commandStrings[0], out Command command))
             {
-                messageString = "couldn't find command";
+                messageString = "Command not found!";
                 return false;
             }
 
             // check if number of arguments is correct
-            var argumentCount = commandStrings.Length - 1;
+            int argumentCount = commandStrings.Length - 1;
             if (argumentCount != command.ArgumentCount)
             {
-                messageString = $"wrong argument count\nGot {argumentCount}\nShould be {command.ArgumentCount}";
+                messageString = $"Incorrect number of arguments!\nGot {argumentCount}\nShould be {command.ArgumentCount}";
                 return false;
             }
 
@@ -69,10 +70,10 @@ namespace ComputerInterface
             }
 
             // if there are arguments present move them into a new array
-            var arguments = new object[argumentCount];
-            for (int i = 1; i < argumentCount+1; i++)
+            object[] arguments = new object[argumentCount];
+            for (int i = 1; i < argumentCount + 1; i++)
             {
-                if (command.ArgumentTypes[i-1] == null)
+                if (command.ArgumentTypes[i - 1] == null)
                 {
                     arguments[i - 1] = commandStrings[i];
                     continue;
@@ -84,10 +85,10 @@ namespace ComputerInterface
                 }
                 catch
                 {
-                    messageString = "arguments not in correct format";
+                    messageString = "Incorrect arguments!\nArguments aren't in the correct format.";
                     return false;
                 }
-                
+
             }
 
             messageString = command.Callback?.Invoke(arguments);
@@ -138,13 +139,6 @@ namespace ComputerInterface
 
             _unregistered = true;
             _commandHandler.UnregisterCommand(_name);
-        }
-    }
-
-    public class CommandAddException : Exception
-    {
-        public CommandAddException(string commandName, string message) : base($"Error adding command {commandName}\n{message}")
-        {
         }
     }
 }

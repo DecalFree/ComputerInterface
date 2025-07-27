@@ -6,16 +6,18 @@ namespace ComputerInterface
 {
     public class CustomScreenInfo
     {
+        public string SceneName;
+
         public TextMeshProUGUI TextMeshProUgui;
         public Transform Transform;
+
         public Renderer Renderer;
-        public Material[] Materials;
-        public RawImage RawImage;
+        public RawImage Background;
 
         public Color Color
         {
-            get => RawImage.material.color;
-            set => RawImage.material.color = value;
+            get => Background.color;
+            set => Background.color = value;
         }
 
         public string Text
@@ -30,10 +32,10 @@ namespace ComputerInterface
             set => TextMeshProUgui.fontSize = value;
         }
 
-        public Texture Background
+        public Texture BackgroundTexture
         {
-            get => RawImage.texture;
-            set => RawImage.texture = value;
+            get => Background.texture;
+            set => Background.texture = value;
         }
     }
 }

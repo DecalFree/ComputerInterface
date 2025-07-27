@@ -22,7 +22,7 @@ namespace ComputerInterface
         {
             if (Loaded) return;
 
-            Patches.HarmonyPatches.ApplyHarmonyPatches();
+            HarmonyPatches.ApplyHarmonyPatches();
 
             Debug.Log("Computer Interface loading");
 
@@ -31,5 +31,4 @@ namespace ComputerInterface
             Loaded = true;
         }
     }
-
 }

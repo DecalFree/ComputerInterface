@@ -6,6 +6,6 @@ namespace ComputerInterface.Queues
     {
         public string DisplayName => "Competitive";
         public string QueueName => "COMPETITIVE";
-        public string Description => "For people who want more of a challenge.";
+        public string Description => "Competitive is for players who want to play the game, while trying as hard as they can.";
     }
 }

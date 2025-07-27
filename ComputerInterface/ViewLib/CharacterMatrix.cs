@@ -43,10 +43,10 @@ namespace ComputerInterface.ViewLib
 
         public override string ToString()
         {
-            var xLength = CharMatrix.GetLength(1);
-            var yLength = CharMatrix.GetLength(0);
+            int xLength = CharMatrix.GetLength(1);
+            int yLength = CharMatrix.GetLength(0);
 
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             for (int y = 0; y < yLength; y++)
             {

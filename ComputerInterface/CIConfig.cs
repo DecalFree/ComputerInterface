@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using Bepinject;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace ComputerInterface
@@ -11,21 +11,21 @@ namespace ComputerInterface
     internal class CIConfig
     {
         public ConfigEntry<Color> ScreenBackgroundColor;
+        public ConfigEntry<string> ScreenBackgroundPath;
         public Texture BackgroundTexture;
 
-        public ConfigEntry<string> _screenBackgroundPath;
         private readonly ConfigEntry<string> _disabledMods;
         private List<string> _disabledModsList;
 
         public CIConfig(BepInConfig config)
         {
-            var file = config.Config;
+            ConfigFile file = config.Config;
 
-            ScreenBackgroundColor = file.Bind("Colors", "ScreenBackgroundColor", new Color(0.08f, 0.08f, 0.08f), "The background color of the screen");
-            _screenBackgroundPath = file.Bind("Textures", "ScreenBackgroundPath", "BepInEx/plugins/ComputerInterface/background.png", "Path to a custom screen background");
-            _disabledMods = file.Bind("Mod Management", "DisabledMods", "", "List of disabled mods");
+            ScreenBackgroundColor = file.Bind("Appearance", "ScreenBackgroundColor", new Color(0.05f, 0.05f, 0.05f), "The background colour of the monitor screen");
+            ScreenBackgroundPath = file.Bind("Appearance", "ScreenBackgroundPath", "BepInEx/plugins/ComputerInterface/background.png", "The background image of the monitor screen");
+            _disabledMods = file.Bind("Data", "DisabledMods", "", "The list of mods disabled by the ComputerInterface mod");
 
-            BackgroundTexture = GetTexture(_screenBackgroundPath.Value);
+            BackgroundTexture = GetTexture(ScreenBackgroundPath.Value);
             DeserializeDisabledMods();
         }
 
@@ -52,10 +52,10 @@ namespace ComputerInterface
         private void DeserializeDisabledMods()
         {
             _disabledModsList = new List<string>();
-            var modString = _disabledMods.Value;
+            string modString = _disabledMods.Value;
             if (modString.StartsWith(";")) modString = modString.Substring(1);
 
-            foreach (var guid in modString.Split(';'))
+            foreach (string guid in modString.Split(';'))
             {
                 _disabledModsList.Add(guid);
             }
@@ -71,9 +71,9 @@ namespace ComputerInterface
             try
             {
                 if (path.IsNullOrWhiteSpace()) return null;
-                var file = new FileInfo(path);
+                FileInfo file = new(path);
                 if (!file.Exists) return null;
-                var tex = new Texture2D(2, 2);
+                Texture2D tex = new(2, 2);
                 tex.LoadImage(File.ReadAllBytes(file.FullName));
                 return tex;
             }

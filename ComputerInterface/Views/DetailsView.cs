@@ -1,10 +1,10 @@
-﻿using System;
-using System.Text;
-using BepInEx;
+﻿using BepInEx;
+using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.ViewLib;
 using GorillaNetworking;
-using Photon.Pun;
+using System;
+using System.Text;
 
 namespace ComputerInterface.Views
 {
@@ -32,39 +32,30 @@ namespace ComputerInterface.Views
         {
             _name = BaseGameInterface.GetName();
             _roomCode = BaseGameInterface.GetRoomCode();
-            _playerCount = PhotonNetwork.CountOfPlayersInRooms;
+            _playerCount = NetworkSystem.Instance.GlobalPlayerCount();
             _playerBans = GorillaComputer.instance.GetField<int>("usersBanned");
         }
 
         private void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
-            str.AppendLine();
+            str.BeginColor("ffffff50").Append("== ").EndColor();
+            str.Append("Details").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
+            str.Append("<size=40>Press any key to update page</size>").AppendLines(2);
 
-            str.AppendClr("Name: ", "ffffff50")
-                .AppendLine()
-                .Repeat(" ", 4)
-                .Append(_name)
-                .AppendLines(2);
+            str.BeginColor("ffffff50").Append("Name: ").EndColor();
+            str.Append($"<size=50>{_name}</size>").AppendLine();
+            str.BeginColor("ffffff50").Append("Display Name: ").EndColor();
+            str.Append($"<size=50>{GorillaTagger.Instance.offlineVRRig.NormalizeName(true, _name).ToUpper()}</size>").AppendLines(3);
 
-            str.AppendClr("Current room:", "ffffff50")
-                .AppendLine()
-                .Repeat(" ", 4)
-                .Append(_roomCode.IsNullOrWhiteSpace() ? "-None-" : _roomCode)
-                .AppendLines(2);
+            str.BeginColor("ffffff50").Append("Players Online: ").EndColor();
+            str.Append($"<size=50>{_playerCount}</size>").AppendLine();
+            str.BeginColor("ffffff50").Append("Users Banned: ").EndColor();
+            str.Append($"<size=50>{_playerBans} (Yesterday)</size>").AppendLines(3);
 
-            str.AppendClr("Players online:", "ffffff50")
-                .AppendLine()
-                .Repeat(" ", 4)
-                .Append(_playerCount)
-                .AppendLines(2);
-
-            str.AppendClr("User bans yesterday:", "ffffff50")
-                .AppendLine()
-                .Repeat(" ", 4)
-                .Append(_playerBans)
-                .AppendLines(2);
+            str.BeginColor("ffffff50").Append("Current Room: ").EndColor();
+            str.Append($"<size=50>{(_roomCode.IsNullOrWhiteSpace() ? "-None-" : _roomCode)}</size>").AppendLine();
 
             Text = str.ToString();
         }
@@ -75,6 +66,9 @@ namespace ComputerInterface.Views
             {
                 case EKeyboardKey.Back:
                     ReturnToMainMenu();
+                    break;
+                default:
+                    Redraw();
                     break;
             }
         }

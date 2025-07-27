@@ -1,5 +1,5 @@
-﻿using System;
-using ComputerInterface.Interfaces;
+﻿using ComputerInterface.Interfaces;
+using System;
 using UnityEngine;
 
 namespace ComputerInterface.ViewLib
@@ -8,7 +8,7 @@ namespace ComputerInterface.ViewLib
     {
         public event Action<string> OnTextChanged;
         public event Action<ComputerViewSwitchEventArgs> OnSwitchView;
-        public event Action<ComputerViewChangeBackgroundEventArgs> OnSetBackground; 
+        public event Action<ComputerViewChangeBackgroundEventArgs> OnSetBackground;
 
         public IComputerView CurrentComputerView { get; private set; }
 
@@ -27,23 +27,25 @@ namespace ComputerInterface.ViewLib
 
             CurrentComputerView = computerView;
             try
-			{
-				CurrentComputerView.OnShow(args);
-			} catch (Exception e)
-			{
-				Debug.LogError($"Error while showing view {computerView.GetType().Name}: {e.Message}");
-			}
+            {
+                CurrentComputerView.OnShow(args);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error while showing roomView {computerView.GetType().Name}: {e.Message}");
+            }
         }
 
         public void NotifyOfKeyPress(EKeyboardKey key)
         {
             try
-			{
-				CurrentComputerView?.OnKeyPressed(key);
-			} catch (Exception e)
-			{
-				Debug.LogError($"Error in OnKeyPressed for key {key} in view {CurrentComputerView.GetType().Name}: {e.Message}");
-			}
+            {
+                CurrentComputerView?.OnKeyPressed(key);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error in OnKeyPressed for key {key} in roomView {CurrentComputerView.GetType().Name}: {e.Message}");
+            }
         }
 
         private void RegisterView(IComputerView view)

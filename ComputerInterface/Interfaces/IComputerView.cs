@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ComputerInterface.ViewLib;
+using System;
 using System.ComponentModel;
-using ComputerInterface.ViewLib;
 
 namespace ComputerInterface.Interfaces
 {

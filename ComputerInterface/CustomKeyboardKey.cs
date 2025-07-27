@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
-using UnityEngine.UI;
 
 namespace ComputerInterface
 {
@@ -13,14 +13,14 @@ namespace ComputerInterface
     {
         private const int PRESS_COOLDOWN = 80;
         private const float KEY_BUMP_AMOUNT = 0.2f;
-        private Color _pressedColor = new Color(0.5f, 0.5f, 0.5f);
+        private Color _pressedColor = new(0.5f, 0.5f, 0.5f);
 
         public static bool KeyDebuggerEnabled;
 
         private static Dictionary<EKeyboardKey, Key> _keyMap;
 
         public EKeyboardKey KeyboardKey { get; private set; }
-        public Text KeyboardText { get; private set; }
+        public TextMeshPro KeyboardText { get; private set; }
 
         public float pressTime;
 
@@ -55,27 +55,33 @@ namespace ComputerInterface
             _keyHandler?.Fetch();
         }
 
-        public void Init(CustomComputer computer, EKeyboardKey key, Text keyboardText = null)
+        public void Init(CustomComputer computer, EKeyboardKey key, TextMeshPro keyboardText = null)
         {
             _computer = computer;
             KeyboardKey = key;
             KeyboardText = keyboardText;
 
+            /*
             if (_keyHandler != null)
             {
                 _keyHandler.OnClick -= OnISKeyPress;
             }
 
-            if (_keyMap.TryGetValue(key, out var ISKey))
+            if (_keyMap.TryGetValue(key, out Key ISKey))
             {
                 _keyHandler = new KeyHandler(Keyboard.current[ISKey]);
                 _keyHandler.OnClick += OnISKeyPress;
             }
+            */
 
+            if (collider != null && !collider.enabled)
+            {
+                collider.enabled = true;
+            }
             enabled = true;
         }
 
-        public void Init(CustomComputer computer, EKeyboardKey key, Text keyboardText, string text)
+        public void Init(CustomComputer computer, EKeyboardKey key, TextMeshPro keyboardText, string text)
         {
             Init(computer, key, keyboardText);
             if (keyboardText != null)
@@ -84,11 +90,32 @@ namespace ComputerInterface
             }
         }
 
-        public void Init(CustomComputer computer, EKeyboardKey key, Text keyboardText, string text, Color buttonColor)
+        public void Init(CustomComputer computer, EKeyboardKey key, TextMeshPro keyboardText, string text, Color buttonColor)
         {
             Init(computer, key, keyboardText, text);
-            _material.color = buttonColor;
-            _originalColor = buttonColor;
+
+            if (_material == null)
+            {
+                _originalColor = buttonColor;
+
+                Renderer baseRenderer = GetComponent<Renderer>();
+                if (baseRenderer.material == null)
+                {
+                    _material = new Material(Shader.Find("Legacy Shaders/Diffuse"))
+                    {
+                        color = buttonColor
+                    };
+                }
+                else
+                {
+                    baseRenderer.material.color = buttonColor;
+                }
+            }
+            else
+            {
+                _material.color = buttonColor;
+                _originalColor = buttonColor;
+            }
 
             Color.RGBToHSV(buttonColor, out float H, out float S, out float _);
             _pressedColor = Color.HSVToRGB(H, S, 0.6f);
@@ -102,7 +129,7 @@ namespace ComputerInterface
                 _isOnCooldown = true;
 
                 BumpIn();
-                _computer.PressButton(this);
+                _computer.PressButton(this, component.isLeftHand);
                 GorillaTagger.Instance.StartVibration(component.isLeftHand, GorillaTagger.Instance.tapHapticStrength / 2f, GorillaTagger.Instance.tapHapticDuration);
                 if (PhotonNetwork.InRoom && GorillaTagger.Instance.myVRRig != null)
                     PhotonView.Get(GorillaTagger.Instance.myVRRig).RPC("PlayHandTap", RpcTarget.Others, 66, component.isLeftHand, 0.1f);
@@ -123,7 +150,7 @@ namespace ComputerInterface
             if (!_bumped)
             {
                 _bumped = true;
-                var pos = transform.localPosition;
+                Vector3 pos = transform.localPosition;
                 pos.y -= KEY_BUMP_AMOUNT;
                 transform.localPosition = pos;
                 collider.center -= new Vector3(0, 0, KEY_BUMP_AMOUNT / 1.125f);
@@ -137,7 +164,7 @@ namespace ComputerInterface
             if (_bumped)
             {
                 _bumped = false;
-                var pos = transform.localPosition;
+                Vector3 pos = transform.localPosition;
                 pos.y += KEY_BUMP_AMOUNT;
                 transform.localPosition = pos;
                 collider.center += new Vector3(0, 0, KEY_BUMP_AMOUNT / 1.125f);
@@ -173,8 +200,8 @@ namespace ComputerInterface
             // add num keys
             for (int i = 1; i < 9; i++)
             {
-                var localKey = (EKeyboardKey)i;
-                var key = (Key) 40+i;
+                EKeyboardKey localKey = (EKeyboardKey)i;
+                Key key = (Key)40 + i;
 
                 _keyMap.Add(localKey, key);
             }
@@ -182,10 +209,10 @@ namespace ComputerInterface
             _keyMap.Add(EKeyboardKey.NUM0, Key.Digit0);
 
             // add keys that match in name like alphabet keys
-            foreach (var gtKey in Enum.GetNames(typeof(EKeyboardKey)))
+            foreach (string gtKey in Enum.GetNames(typeof(EKeyboardKey)))
             {
-                var val = (EKeyboardKey) Enum.Parse(typeof(EKeyboardKey), gtKey);
-                if(_keyMap.ContainsKey(val))continue;
+                EKeyboardKey val = (EKeyboardKey)Enum.Parse(typeof(EKeyboardKey), gtKey);
+                if (_keyMap.ContainsKey(val)) continue;
 
                 if (!Enum.TryParse(gtKey, true, out Key key)) continue;
 

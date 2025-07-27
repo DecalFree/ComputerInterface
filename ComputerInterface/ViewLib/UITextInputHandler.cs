@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ComputerInterface.Extensions;
+using System;
 
 namespace ComputerInterface.ViewLib
 {
@@ -39,7 +40,7 @@ namespace ComputerInterface.ViewLib
 
         private void TypeChar(EKeyboardKey key)
         {
-            if (key.TryParseNumber(out var num))
+            if (key.TryParseNumber(out int num))
             {
                 Text += num;
                 return;

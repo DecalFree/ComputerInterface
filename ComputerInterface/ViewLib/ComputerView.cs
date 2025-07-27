@@ -1,12 +1,12 @@
-﻿using System;
+﻿using ComputerInterface.Interfaces;
+using ComputerInterface.Views;
+using JetBrains.Annotations;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using ComputerInterface.Interfaces;
-using ComputerInterface.Views;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace ComputerInterface.ViewLib
@@ -16,7 +16,7 @@ namespace ComputerInterface.ViewLib
         /// <summary>
         /// How many characters fit in the x axis of the screen
         /// </summary>
-        public static int SCREEN_WIDTH = 41;
+        public static int SCREEN_WIDTH = 52;
 
         /// <summary>
         /// How many characters fit in the y axis of the screen
@@ -54,7 +54,7 @@ namespace ComputerInterface.ViewLib
         /// <param name="builderCallback"></param>
         public virtual void SetText(Action<StringBuilder> builderCallback)
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
             builderCallback(str);
             SetText(str);
         }
@@ -68,7 +68,7 @@ namespace ComputerInterface.ViewLib
         }
 
         /// <summary>
-        /// Gets called when the view is shown
+        /// Gets called when the roomView is shown
         /// call the base OnShow when overriding
         /// to display the current text on the computer
         /// </summary>
@@ -78,7 +78,7 @@ namespace ComputerInterface.ViewLib
         }
 
         /// <summary>
-        /// Switch to another view
+        /// Switch to another roomView
         /// </summary>
         /// <param name="type"></param>
         public void ShowView<T>(params object[] args)
@@ -87,7 +87,7 @@ namespace ComputerInterface.ViewLib
         }
 
         /// <summary>
-        /// Switch to another view
+        /// Switch to another roomView
         /// </summary>
         /// <param name="type"></param>
         public void ShowView(Type type, params object[] args)
@@ -96,7 +96,7 @@ namespace ComputerInterface.ViewLib
         }
 
         /// <summary>
-        /// Return to previous view
+        /// Return to previous roomView
         /// </summary>
         public void ReturnView()
         {
@@ -104,7 +104,7 @@ namespace ComputerInterface.ViewLib
         }
 
         /// <summary>
-        /// Shows the main menu view
+        /// Shows the main menu roomView
         /// </summary>
         public void ReturnToMainMenu()
         {
@@ -113,7 +113,7 @@ namespace ComputerInterface.ViewLib
 
         public void SetBackground(Texture texture, Color? color = null)
         {
-            var args = new ComputerViewChangeBackgroundEventArgs(texture, color);
+            ComputerViewChangeBackgroundEventArgs args = new(texture, color);
             OnChangeBackgroundRequest?.Invoke(args);
         }
 
@@ -124,7 +124,7 @@ namespace ComputerInterface.ViewLib
 
         public async Task ShowSplashForDuration(Texture texture, int ms)
         {
-            var text = Text;
+            string text = Text;
             Text = "";
             SetBackground(texture);
             await Task.Delay(ms);

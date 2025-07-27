@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,21 +15,22 @@ namespace ComputerInterface
         private AssetBundle _loadedBundle;
         private Task _loadingTask;
 
+        private readonly Dictionary<string, Object> _assetCache = new();
+
         public async Task<T> GetAsset<T>(string name) where T : Object
         {
+            if (_assetCache.TryGetValue(name, out Object cachedObject)) return (T)cachedObject;
+
             if (!IsLoaded)
             {
-                if (_loadingTask == null)
-                {
-                    _loadingTask = LoadBundleAsyncInternal();
-                }
+                _loadingTask ??= LoadBundleAsyncInternal();
 
                 await _loadingTask;
             }
 
-            var completionSource = new TaskCompletionSource<T>();
+            TaskCompletionSource<T> completionSource = new();
 
-            var assetBundleRequest = _loadedBundle.LoadAssetAsync<T>(name);
+            AssetBundleRequest assetBundleRequest = _loadedBundle.LoadAssetAsync<T>(name);
             assetBundleRequest.completed += _ =>
             {
                 if (assetBundleRequest.asset == null)
@@ -41,21 +43,23 @@ namespace ComputerInterface
                 completionSource.SetResult((T)assetBundleRequest.asset);
             };
 
-            return await completionSource.Task;
+            T completedTask = await completionSource.Task;
+            _assetCache.Add(name, completedTask);
+            return completedTask;
         }
 
         private async Task LoadBundleAsyncInternal()
         {
-            var completionSource = new TaskCompletionSource<AssetBundle>();
+            TaskCompletionSource<AssetBundle> completionSource = new();
 
-            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ComputerInterface.Resources.assets");
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ComputerInterface.Content.CIBundle");
             if (stream == null)
             {
                 Debug.LogError("Couldn't load embedded assets");
                 return;
             }
 
-            var assetBundleCreateRequest = AssetBundle.LoadFromStreamAsync(stream);
+            AssetBundleCreateRequest assetBundleCreateRequest = AssetBundle.LoadFromStreamAsync(stream);
             assetBundleCreateRequest.completed += _ =>
             {
                 completionSource.SetResult(assetBundleCreateRequest.assetBundle);

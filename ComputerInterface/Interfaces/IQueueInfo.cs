@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ComputerInterface.Interfaces
+﻿namespace ComputerInterface.Interfaces
 {
     public interface IQueueInfo
     {

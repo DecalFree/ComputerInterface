@@ -1,4 +1,5 @@
-﻿using ComputerInterface.ViewLib;
+﻿using ComputerInterface.Extensions;
+using ComputerInterface.ViewLib;
 using System.Text;
 using UnityEngine;
 
@@ -24,19 +25,19 @@ namespace ComputerInterface.Views.GameSettings
             Redraw();
         }
 
-		void UpdateState()
+        void UpdateState()
         {
-			_selectionHandler.CurrentSelectionIndex = BaseGameInterface.GetItemMode() ? 1 : 0;
+            _selectionHandler.CurrentSelectionIndex = BaseGameInterface.GetItemMode() ? 1 : 0;
             _insVolumeFloat = BaseGameInterface.GetInstrumentVolume();
         }
 
         private void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
             str.Append("Item Tab").AppendLine();
-            str.AppendClr("0 - 9 to set instrument volume", "ffffff50").AppendLine();
+            str.AppendClr("0 - 9 to set Instrument Volume", "ffffff50").AppendLine();
             str.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
 
             str.Append("Instrument Volume: ").Append(Mathf.CeilToInt(_insVolumeFloat * 50f));
@@ -57,8 +58,8 @@ namespace ComputerInterface.Views.GameSettings
                 Redraw();
                 return;
             }
-            
-            if (key.TryParseNumber(out var num))
+
+            if (key.TryParseNumber(out int num))
             {
                 BaseGameInterface.SetInstrumentVolume(num);
                 UpdateState();

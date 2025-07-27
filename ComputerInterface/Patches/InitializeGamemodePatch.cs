@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using GorillaNetworking;
+﻿using GorillaNetworking;
+using HarmonyLib;
 using UnityEngine;
 
 namespace ComputerInterface.Patches

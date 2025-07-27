@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿using ComputerInterface.Extensions;
 using ComputerInterface.ViewLib;
-using UnityEngine;
+using System.Text;
 
 namespace ComputerInterface.Views
 {
@@ -20,12 +20,12 @@ namespace ComputerInterface.Views
         {
             base.OnShow(args);
 
-            var commands = _commandHandler.GetAllCommands();
-            var lines = new string[commands.Count];
+            System.Collections.Generic.IList<Command> commands = _commandHandler.GetAllCommands();
+            string[] lines = new string[commands.Count];
 
             for (int i = 0; i < lines.Length; i++)
             {
-                var command = commands[i];
+                Command command = commands[i];
 
                 lines[i] = "- ";
 
@@ -35,7 +35,7 @@ namespace ComputerInterface.Views
 
                 if (command.ArgumentTypes != null)
                 {
-                    foreach (var argType in command.ArgumentTypes)
+                    foreach (System.Type argType in command.ArgumentTypes)
                     {
                         if (argType == null)
                         {
@@ -54,7 +54,7 @@ namespace ComputerInterface.Views
 
         public void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             DrawHeader(str);
             DrawCommands(str);
@@ -64,21 +64,15 @@ namespace ComputerInterface.Views
 
         public void DrawHeader(StringBuilder str)
         {
-            str.BeginColor("ffffff80").BeginCenter().Append("Page ").Append(_pageHandler.CurrentPage+1).EndAlign().AppendLine();
-            str.Append("Navigate with left / right arrow key").AppendLine();
-
-            for (int x = 0; x < SCREEN_WIDTH; x++)
-            {
-                str.Append("=");
-            }
-
-            str.EndColor().AppendLine();
+            str.BeginColor("ffffff50").Append("== ").EndColor();
+            str.Append("Command Line Info").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
+            str.Append("<size=40>Nativate using the Left/Right arrow keys</size>").AppendLines(2);
         }
 
         public void DrawCommands(StringBuilder str)
         {
-            var lines = _pageHandler.GetLinesForCurrentPage();
-            for (var i = 0; i < lines.Length; i++)
+            string[] lines = _pageHandler.GetLinesForCurrentPage();
+            for (int i = 0; i < lines.Length; i++)
             {
                 str.Append(lines[i]);
                 str.AppendLine();

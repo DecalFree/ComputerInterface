@@ -6,6 +6,6 @@ namespace ComputerInterface.Queues
     {
         public string DisplayName => "Default";
         public string QueueName => "DEFAULT";
-        public string Description => "Default queue.";
+        public string Description => "Default is for anyone to play normally.";
     }
 }

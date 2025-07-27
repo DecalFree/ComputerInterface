@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="BeatSaberModdingTools.Tasks" Version="1.3.2">
@@ -16,11 +16,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(GameAssemblyPath)\Assembly-CSharp.dll</HintPath>
+		</Reference>
 		<Reference Include="BepInEx">
 			<HintPath>$(BepInExAssemblyPath)\BepInEx.dll</HintPath>
 		</Reference>
 		<Reference Include="Bepinject">
-			<HintPath>$(PluginsPath)\Bepinject-Auros\Bepinject.dll</HintPath>
+			<HintPath>$(PluginsPath)\Core Mods\Bepinject\Bepinject.dll</HintPath>
+		</Reference>
+		<Reference Include="PhotonUnityNetworking">
+		  <HintPath>$(GameAssemblyPath)\PhotonUnityNetworking.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine">
 			<HintPath>$(GameAssemblyPath)\UnityEngine.dll</HintPath>
@@ -29,10 +35,10 @@
 			<HintPath>$(GameAssemblyPath)\UnityEngine.CoreModule.dll</HintPath>
 		</Reference>
 		<Reference Include="Zenject">
-			<HintPath>$(PluginsPath)\Extenject\Zenject.dll</HintPath>
+			<HintPath>$(PluginsPath)\Core Mods\Extenject\Zenject.dll</HintPath>
 		</Reference>
 		<Reference Include="Zenject-usage">
-			<HintPath>$(PluginsPath)\Extenject\Zenject-usage.dll</HintPath>
+			<HintPath>$(PluginsPath)\Core Mods\Extenject\Zenject-usage.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

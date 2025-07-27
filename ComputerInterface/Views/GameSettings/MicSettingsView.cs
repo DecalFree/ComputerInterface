@@ -1,7 +1,6 @@
-﻿using System;
-using System.Text;
+﻿using ComputerInterface.Extensions;
 using ComputerInterface.ViewLib;
-using static ComputerInterface.BaseGameInterface;
+using System.Text;
 
 namespace ComputerInterface.Views.GameSettings
 {
@@ -19,22 +18,23 @@ namespace ComputerInterface.Views.GameSettings
         public override void OnShow(object[] args)
         {
             base.OnShow(args);
-            _selectionHandler.CurrentSelectionIndex = (int) BaseGameInterface.GetPttMode();
+            _selectionHandler.CurrentSelectionIndex = (int)BaseGameInterface.GetPttMode();
             Redraw();
         }
 
         public void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
             str.Append("Mic Tab").AppendLine();
             str.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
 
-            str.AppendLine("Mic Mode: ");
             str.AppendLine(_selectionHandler.GetIndicatedText(0, "All Chat"));
-            str.AppendLine(_selectionHandler.GetIndicatedText(1, "Push To Talk"));
-            str.AppendLine(_selectionHandler.GetIndicatedText(2, "Push To Mute"));
+            str.AppendLine(_selectionHandler.GetIndicatedText(1, "Push to Talk"));
+            str.AppendLine(_selectionHandler.GetIndicatedText(2, "Push to Mute"));
+
+            str.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append("\"Push to Talk\" and \"Push to Mute\" work with any face button.");
 
             SetText(str);
         }

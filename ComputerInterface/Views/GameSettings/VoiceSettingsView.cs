@@ -1,5 +1,6 @@
-﻿using System.Text;
+﻿using ComputerInterface.Extensions;
 using ComputerInterface.ViewLib;
+using System.Text;
 
 namespace ComputerInterface.Views.GameSettings
 {
@@ -17,22 +18,23 @@ namespace ComputerInterface.Views.GameSettings
         public override void OnShow(object[] args)
         {
             base.OnShow(args);
-            _selectionHandler.CurrentSelectionIndex = BaseGameInterface.GetVoiceMode()?0:1;
+            _selectionHandler.CurrentSelectionIndex = BaseGameInterface.GetVoiceMode() ? 0 : 1;
             Redraw();
         }
 
 
         public void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
             str.Append("Voice Tab").AppendLine();
             str.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
 
-            str.AppendLine("Voice Chat: ");
-            str.AppendLine(_selectionHandler.GetIndicatedText(0, "Enabled"));
-            str.AppendLine(_selectionHandler.GetIndicatedText(1, "Disabled"));
+            str.AppendLine(_selectionHandler.GetIndicatedText(0, "Human Voices"));
+            str.AppendLine(_selectionHandler.GetIndicatedText(1, "Monke Voices"));
+
+            str.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append("Choose which type of voice you would like to both hear and speak.");
 
             SetText(str);
         }

@@ -5,12 +5,11 @@
 		<GameAssemblyPath>$(GamePath)\Gorilla Tag_Data\Managed</GameAssemblyPath>
 		<BepInExAssemblyPath>$(GamePath)\BepInEx\core</BepInExAssemblyPath>
 		<PluginsPath>$(GamePath)\BepInEx\plugins</PluginsPath>
-		<ZipDir>$(SolutionDir)ReleaseZip</ZipDir>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(CI)'=='TRUE'">
-		<GameAssemblyPath>..\ComputerInterface\Libs</GameAssemblyPath>
-		<BepInExAssemblyPath>..\ComputerInterface\Libs</BepInExAssemblyPath>
-		<PluginsPath>..\ComputerInterface\Libs</PluginsPath>
+		<GameAssemblyPath>.\Libs</GameAssemblyPath>
+		<BepInExAssemblyPath>.\Libs</BepInExAssemblyPath>
+		<PluginsPath>.\Libs</PluginsPath>
 		<WarningLevel>0</WarningLevel>
 	</PropertyGroup>
 </Project>

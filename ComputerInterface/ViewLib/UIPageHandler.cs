@@ -99,7 +99,7 @@ namespace ComputerInterface.ViewLib
         /// <returns>line number relative to the page</returns>
         public int MovePageToIdx(int idx)
         {
-            var page = Mathf.FloorToInt((float)idx / EntriesPerPage);
+            int page = Mathf.FloorToInt((float)idx / EntriesPerPage);
             CurrentPage = page;
             return idx % EntriesPerPage;
         }
@@ -142,7 +142,7 @@ namespace ComputerInterface.ViewLib
             return string.Format(Footer,
                 CurrentPage > 0 ? PrevMark : " ",
                 CurrentPage < MaxPage ? NextMark : " ",
-                CurrentPage+1, MaxPage+1);
+                CurrentPage + 1, MaxPage + 1);
         }
     }
 }

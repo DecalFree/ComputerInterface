@@ -1,13 +1,14 @@
-﻿using System;
-using System.Text;
+﻿using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.ViewLib;
+using System;
+using System.Text;
 
 namespace ComputerInterface.Views
 {
     public class CommandLineEntry : IComputerModEntry
     {
-        public string EntryName => "CommandLine";
+        public string EntryName => "Command Line";
         public Type EntryViewType => typeof(CommandLineView);
     }
 
@@ -17,6 +18,7 @@ namespace ComputerInterface.Views
         private readonly UITextInputHandler _textInputHandler;
 
         private string _notification = "";
+        private string _previousCommand = "";
 
         public CommandLineView(CommandHandler commandHandler)
         {
@@ -32,7 +34,7 @@ namespace ComputerInterface.Views
 
         public void Redraw()
         {
-            var builder = new StringBuilder();
+            StringBuilder builder = new();
             DrawHeader(builder);
             DrawCurrentCommand(builder);
 
@@ -41,10 +43,9 @@ namespace ComputerInterface.Views
 
         public void DrawHeader(StringBuilder str)
         {
-            str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
-            str.Append("CommandLine").AppendLine();
-            str.AppendClr("Press Option 1 for command list", "ffffff50").AppendLine();
-            str.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
+            str.BeginColor("ffffff50").Append("== ").EndColor();
+            str.Append("Command Line").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
+            str.Append("<size=40>Press Option 1 to roomView command list</size>").AppendLines(2);
         }
 
         public void DrawCurrentCommand(StringBuilder str)
@@ -76,18 +77,29 @@ namespace ComputerInterface.Views
                 case EKeyboardKey.Option1:
                     ShowView<CommandLineHelpView>();
                     break;
+                case EKeyboardKey.Up:
+                    if (_previousCommand == "") return;
+                    _textInputHandler.Text = _previousCommand;
+                    _previousCommand = "";
+                    Redraw();
+                    break;
+                default:
+                    _previousCommand = "";
+                    break;
             }
         }
 
         public void RunCommand()
         {
             _notification = "";
-            var success = _commandHandler.Execute(_textInputHandler.Text, out var messageString);
+            bool success = _commandHandler.Execute(_textInputHandler.Text, out string messageString);
 
             _notification = messageString;
 
+            _previousCommand = "";
             if (success)
             {
+                _previousCommand = _textInputHandler.Text;
                 _textInputHandler.Text = "";
             }
 

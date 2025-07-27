@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using BepInEx.Bootstrap;
+﻿using BepInEx.Bootstrap;
+using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.ViewLib;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace ComputerInterface.Views
 {
@@ -24,7 +25,7 @@ namespace ComputerInterface.Views
             _selectionHandler.ConfigureSelectionIndicator("<color=#ed6540>></color> ", "", "  ", "");
 
             _pageHandler = new UIElementPageHandler<IComputerModEntry>(EKeyboardKey.Left, EKeyboardKey.Right);
-            _pageHandler.Footer = "<color=#ffffff50>{0}{1}        <align=\"right\"><margin-right=2em>page {2}/{3}</margin></align></color>";
+            _pageHandler.Footer = "<color=#ffffff50>{0}{1}        <align=\"right\"><margin-right=2em>Page {2}/{3}</margin></align></color>";
             _pageHandler.NextMark = "▼";
             _pageHandler.PrevMark = "▲";
             _pageHandler.EntriesPerPage = 8;
@@ -39,10 +40,10 @@ namespace ComputerInterface.Views
 
             // Map entries to plugin infos
             _pluginInfoMap.Clear();
-            foreach (var entry in entries)
+            foreach (IComputerModEntry entry in entries)
             {
-                var asm = entry.GetType().Assembly;
-                var pluginInfo =
+                System.Reflection.Assembly asm = entry.GetType().Assembly;
+                BepInEx.PluginInfo pluginInfo =
                     Chainloader.PluginInfos.Values.FirstOrDefault(x => x.Instance.GetType().Assembly == asm);
                 if (pluginInfo != null)
                 {
@@ -58,19 +59,18 @@ namespace ComputerInterface.Views
         public void FilterEntries()
         {
             _shownEntries.Clear();
-            List<IComputerModEntry> customEntries = new List<IComputerModEntry>();
-            foreach (var entry in _modEntries)
+            List<IComputerModEntry> customEntries = new();
+            foreach (IComputerModEntry entry in _modEntries)
             {
-                if (!_pluginInfoMap.TryGetValue(entry, out var info)) continue;
-                if (info.Instance.enabled)
+                if (!_pluginInfoMap.TryGetValue(entry, out BepInEx.PluginInfo info)) continue;
+
+                if (info.Instance.GetType().Assembly == GetType().Assembly)
                 {
-                    if (info.Instance.GetType().Assembly == GetType().Assembly)
-					{
-						_shownEntries.Add(entry);
-					} else
-					{
-						customEntries.Add(entry);
-					}
+                    _shownEntries.Add(entry);
+                }
+                else
+                {
+                    customEntries.Add(entry);
                 }
             }
             _shownEntries.AddRange(customEntries);
@@ -80,7 +80,7 @@ namespace ComputerInterface.Views
 
         public void Redraw()
         {
-            var builder = new StringBuilder();
+            StringBuilder builder = new();
 
             DrawHeader(builder);
             DrawMods(builder);
@@ -91,19 +91,19 @@ namespace ComputerInterface.Views
         public void DrawHeader(StringBuilder str)
         {
             str.BeginCenter().MakeBar('-', SCREEN_WIDTH, 0, "ffffff10");
-            str.AppendClr("Computer Interface", PrimaryColor)
+            str.AppendClr(PluginInfo.Name, PrimaryColor)
                 .EndColor()
-                .Append(" v")
+                .Append(" - v")
                 .Append(PluginInfo.Version).AppendLine();
 
-            str.Append("by ").AppendClr("Toni Macaroni", "9be68a").AppendLine();
+            str.Append("Computer Interface created by ").AppendClr("Toni Macaroni", "9be68a").AppendLine();
 
             str.MakeBar('-', SCREEN_WIDTH, 0, "ffffff10").EndAlign().AppendLine();
         }
 
         public void DrawMods(StringBuilder str)
         {
-            var lineIdx = _pageHandler.MovePageToIdx(_selectionHandler.CurrentSelectionIndex);
+            int lineIdx = _pageHandler.MovePageToIdx(_selectionHandler.CurrentSelectionIndex);
 
             _pageHandler.EnumarateElements((entry, idx) =>
             {
@@ -134,7 +134,10 @@ namespace ComputerInterface.Views
             switch (key)
             {
                 case EKeyboardKey.Option1:
-                    BaseGameInterface.Disconnect();
+                    if (NetworkSystem.Instance.InRoom)
+                    {
+                        BaseGameInterface.Disconnect();
+                    }
                     break;
             }
         }

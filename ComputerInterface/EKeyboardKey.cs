@@ -2,7 +2,7 @@
 {
     public enum EKeyboardKey
     {
-        NUM0, 
+        NUM0,
         NUM1,
         NUM2,
         NUM3,

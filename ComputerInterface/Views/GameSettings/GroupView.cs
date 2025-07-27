@@ -1,5 +1,6 @@
-using System.Text;
+using ComputerInterface.Extensions;
 using ComputerInterface.ViewLib;
+using System.Text;
 
 namespace ComputerInterface.Views.GameSettings
 {
@@ -25,12 +26,12 @@ namespace ComputerInterface.Views.GameSettings
         public void Join()
         {
             BaseGameInterface.JoinGroupMap(_selectionHandler.CurrentSelectionIndex);
-            ShowView<JoinRoomView>();
+            ShowView<RoomView>();
         }
 
         public void Redraw()
         {
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             DrawHeader(str);
             DrawOptions(str);
@@ -49,10 +50,10 @@ namespace ComputerInterface.Views.GameSettings
         public void DrawOptions(StringBuilder str)
         {
             str.AppendLine("Available maps: ");
-            var maps = BaseGameInterface.GetGroupJoinMaps();
+            string[] maps = BaseGameInterface.GetGroupJoinMaps();
             for (int i = 0; i < maps.Length; i++)
             {
-                var formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(maps[i]);
+                string formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(maps[i]);
                 str.Append(_selectionHandler.GetIndicatedText(i, formattedName)).AppendLine();
             }
         }

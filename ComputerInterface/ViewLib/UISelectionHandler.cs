@@ -4,7 +4,7 @@ namespace ComputerInterface.ViewLib
 {
     public class UISelectionHandler
     {
-        public event Action<int> OnSelected; 
+        public event Action<int> OnSelected;
 
         public int CurrentSelectionIndex;
 

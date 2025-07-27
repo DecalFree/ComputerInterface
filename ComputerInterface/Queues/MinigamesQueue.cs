@@ -6,6 +6,6 @@ namespace ComputerInterface.Queues
     {
         public string DisplayName => "Minigames";
         public string QueueName => "MINIGAMES";
-        public string Description => "For people looking to play minigames.";
+        public string Description => "Minigames is for people looking to play with their own set of rules.";
     }
 }

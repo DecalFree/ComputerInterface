@@ -9,12 +9,12 @@ namespace ComputerInterface.ViewLib
 
         public UITextPageHandler(EKeyboardKey prevKey, EKeyboardKey nextKey) : base(prevKey, nextKey)
         {
-            
+
         }
 
         public UITextPageHandler()
         {
-            
+
         }
 
         /// <summary>
@@ -51,9 +51,9 @@ namespace ComputerInterface.ViewLib
                 Debug.LogError("Lines are not set yet\nPlease set the lines first");
             }
 
-            var startIdx = EntriesPerPage * page;
+            int startIdx = EntriesPerPage * page;
             ItemsOnScreen = Math.Min(EntriesPerPage, _lines.Length - startIdx);
-            var pageLines = new string[ItemsOnScreen];
+            string[] pageLines = new string[ItemsOnScreen];
             for (int i = 0; i < ItemsOnScreen; i++)
             {
                 pageLines[i] = _lines[startIdx + i];

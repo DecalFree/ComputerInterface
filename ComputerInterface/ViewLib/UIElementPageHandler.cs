@@ -9,12 +9,12 @@ namespace ComputerInterface.ViewLib
 
         public UIElementPageHandler(EKeyboardKey prevKey, EKeyboardKey nextKey) : base(prevKey, nextKey)
         {
-            
+
         }
 
         public UIElementPageHandler()
         {
-            
+
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace ComputerInterface.ViewLib
                 return;
             }
 
-            var elements = GetElementsForPage(page);
+            T[] elements = GetElementsForPage(page);
             for (int i = 0; i < elements.Length; i++)
             {
                 elementCallback(elements[i], i);
@@ -61,7 +61,7 @@ namespace ComputerInterface.ViewLib
                 return;
             }
 
-            var elements = GetElementsForPage(CurrentPage);
+            T[] elements = GetElementsForPage(CurrentPage);
             for (int i = 0; i < elements.Length; i++)
             {
                 elementCallback(elements[i], i);
@@ -81,9 +81,9 @@ namespace ComputerInterface.ViewLib
                 return null;
             }
 
-            var startIdx = EntriesPerPage * page;
+            int startIdx = EntriesPerPage * page;
             ItemsOnScreen = Math.Min(EntriesPerPage, _elements.Length - startIdx);
-            var pageElements = new T[ItemsOnScreen];
+            T[] pageElements = new T[ItemsOnScreen];
             for (int i = 0; i < ItemsOnScreen; i++)
             {
                 pageElements[i] = _elements[startIdx + i];
