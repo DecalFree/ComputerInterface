@@ -134,7 +134,16 @@ namespace ComputerInterface
         {
             if (!CheckForComputer(out GorillaComputer computer)) return;
             
-            computer.InvokeMethod("UpdateNametagSetting", newValue, saveValue);
+            computer.SetField("<NametagsEnabled>k__BackingField", newValue);
+            NetworkSystem.Instance.SetMyNickName(computer.NametagsEnabled ? computer.savedName : NetworkSystem.Instance.GetMyDefaultName());
+            GetColor(out float r, out float g, out float b);
+            InitializeNoobMaterial(r, g, b);
+            computer.GetField<Action<bool>>("onNametagSettingChangedAction").Invoke(computer.NametagsEnabled);
+            if (saveValue)
+            {
+                PlayerPrefs.SetInt(computer.NameTagPlayerPref, computer.NametagsEnabled ? 1 : 0);
+                PlayerPrefs.Save();
+            }
         }
 
         #endregion
