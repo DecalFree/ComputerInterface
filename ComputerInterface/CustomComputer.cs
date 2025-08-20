@@ -156,25 +156,32 @@ namespace ComputerInterface
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
         {
-            string sceneName = scene.name;
-
-            if (loadMode == LoadSceneMode.Additive)
+            try 
             {
-                if (sceneName == "Cave")
-                    PrepareMonitor(scene, "Cave_Main_Prefab/OldCave/MinesComputer/GorillaComputerObject/ComputerUI");
-                
-                switch (ZoneManagement.instance.activeZones.First())
+                string sceneName = scene.name;
+
+                if (loadMode == LoadSceneMode.Additive)
                 {
-                    case GTZone.monkeBlocks:
-                        PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/MonkeBlocksRoomPersistent/MonkeBlocksComputer/GorillaComputerObject/ComputerUI");
-                        break;
-                    case GTZone.monkeBlocksShared:
-                        PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/LocalObjects_Prefab/SharedBlocksMapSelectLobby/GorillaComputerObject/ComputerUI");
-                        break;
-                    default:
-                        PrepareMonitor(scene, scene.GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath());
-                        break;
+                    if (sceneName == "Cave")
+                        PrepareMonitor(scene, "Cave_Main_Prefab/OldCave/MinesComputer/GorillaComputerObject/ComputerUI");
+                    
+                    switch (ZoneManagement.instance.activeZones.First())
+                    {
+                        case GTZone.monkeBlocks:
+                            PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/MonkeBlocksRoomPersistent/MonkeBlocksComputer/GorillaComputerObject/ComputerUI");
+                            break;
+                        case GTZone.monkeBlocksShared:
+                            PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/LocalObjects_Prefab/SharedBlocksMapSelectLobby/GorillaComputerObject/ComputerUI");
+                            break;
+                        default:
+                            PrepareMonitor(scene, scene.GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath());
+                            break;
+                    }
                 }
+            } 
+            catch (Exception ex)
+            {
+                Debug.LogError(ex);
             }
         }
 
