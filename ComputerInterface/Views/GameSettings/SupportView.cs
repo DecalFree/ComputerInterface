@@ -29,7 +29,7 @@ namespace ComputerInterface.Views.GameSettings
 
         public void DrawHeader(StringBuilder str)
         {
-            str.BeginCenter().BeginColor("ffffff50").Repeat("=", SCREEN_WIDTH).AppendLine();
+            str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
             str.Append("Support Tab").AppendLine();
             str.AppendClr("Only show this to AA support", "ffffff50").AppendLine();
             str.Repeat("=", SCREEN_WIDTH).EndColor().EndAlign().AppendLines(2);
