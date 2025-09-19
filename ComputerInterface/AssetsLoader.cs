@@ -10,14 +10,14 @@ namespace ComputerInterface
 {
     internal class AssetsLoader : IDisposable
     {
-        public bool IsLoaded { get; private set; }
+        public static bool IsLoaded { get; private set; }
 
-        private AssetBundle _loadedBundle;
-        private Task _loadingTask;
+        private static AssetBundle _loadedBundle;
+        private static Task _loadingTask;
 
-        private readonly Dictionary<string, Object> _assetCache = new();
+        private static readonly Dictionary<string, Object> _assetCache = new();
 
-        public async Task<T> GetAsset<T>(string name) where T : Object
+        public static async Task<T> GetAsset<T>(string name) where T : Object
         {
             if (_assetCache.TryGetValue(name, out Object cachedObject)) return (T)cachedObject;
 
@@ -48,7 +48,7 @@ namespace ComputerInterface
             return completedTask;
         }
 
-        private async Task LoadBundleAsyncInternal()
+        private static async Task LoadBundleAsyncInternal()
         {
             TaskCompletionSource<AssetBundle> completionSource = new();
 

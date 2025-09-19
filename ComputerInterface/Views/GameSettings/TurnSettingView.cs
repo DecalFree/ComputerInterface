@@ -10,7 +10,7 @@ namespace ComputerInterface.Views.GameSettings
 
         private int _turnSpeed = 4;
 
-        private TurnSettingView()
+        public TurnSettingView()
         {
             _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down);
             _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");

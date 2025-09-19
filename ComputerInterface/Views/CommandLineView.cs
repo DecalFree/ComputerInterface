@@ -20,9 +20,9 @@ namespace ComputerInterface.Views
         private string _notification = "";
         private string _previousCommand = "";
 
-        public CommandLineView(CommandHandler commandHandler)
+        public CommandLineView()
         {
-            _commandHandler = commandHandler;
+            _commandHandler = Plugin.CommandHandler;
             _textInputHandler = new UITextInputHandler();
         }
 

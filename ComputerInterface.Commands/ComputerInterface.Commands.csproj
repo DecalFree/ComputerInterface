@@ -22,9 +22,6 @@
 		<Reference Include="BepInEx">
 			<HintPath>$(BepInExAssemblyPath)\BepInEx.dll</HintPath>
 		</Reference>
-		<Reference Include="Bepinject">
-			<HintPath>$(PluginsPath)\Core Mods\Bepinject\Bepinject.dll</HintPath>
-		</Reference>
 		<Reference Include="PhotonUnityNetworking">
 		  <HintPath>$(GameAssemblyPath)\PhotonUnityNetworking.dll</HintPath>
 		</Reference>
@@ -33,12 +30,6 @@
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<HintPath>$(GameAssemblyPath)\UnityEngine.CoreModule.dll</HintPath>
-		</Reference>
-		<Reference Include="Zenject">
-			<HintPath>$(PluginsPath)\Core Mods\Extenject\Zenject.dll</HintPath>
-		</Reference>
-		<Reference Include="Zenject-usage">
-			<HintPath>$(PluginsPath)\Core Mods\Extenject\Zenject-usage.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

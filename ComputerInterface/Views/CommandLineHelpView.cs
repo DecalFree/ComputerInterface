@@ -9,9 +9,9 @@ namespace ComputerInterface.Views
         private readonly CommandHandler _commandHandler;
         private readonly UITextPageHandler _pageHandler;
 
-        public CommandLineHelpView(CommandHandler commandHandler)
+        public CommandLineHelpView()
         {
-            _commandHandler = commandHandler;
+            _commandHandler = Plugin.CommandHandler;
             _pageHandler = new UITextPageHandler(EKeyboardKey.Left, EKeyboardKey.Right);
             _pageHandler.EntriesPerPage = 8;
         }

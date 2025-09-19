@@ -1,20 +1,18 @@
 ﻿using System;
 using UnityEngine;
-using Zenject;
-using Photon.Pun;
 
 namespace ComputerInterface.Commands
 {
-    public class CommandRegistrar : IInitializable
+    public class CommandRegistrar
     {
         private CommandHandler _commandHandler;
         private CustomComputer _computer;
 
-        [Inject]
-        public void Construct(CommandHandler commandHandler, CustomComputer computer)
-        {
-            _commandHandler = commandHandler;
-            _computer = computer;
+        public void Initialize() {
+            _commandHandler = ComputerInterface.Plugin.CommandHandler;
+            _computer = ComputerInterface.Plugin.CustomComputer;
+            
+            RegisterCommands();
         }
 
         public void RegisterCommands()
@@ -104,11 +102,6 @@ namespace ComputerInterface.Commands
 
                 return $"Updated background:\n\nR: {r} ({args[0]})\nG: {g} ({args[1]})\nB: {b} ({args[2]})\n";
             }));
-        }
-
-        public void Initialize()
-        {
-            RegisterCommands();
         }
     }
 }

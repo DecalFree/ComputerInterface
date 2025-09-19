@@ -1,21 +1,30 @@
+using System;
 using BepInEx;
-using Bepinject;
+using GorillaNetworking;
 using UnityEngine;
 
 namespace ComputerInterface
 {
-    [BepInDependency("dev.auros.bepinex.bepinject")]
     [BepInPlugin(PluginInfo.Id, PluginInfo.Name, PluginInfo.Version)]
-    public class Plugin : BaseUnityPlugin
-    {
+    public class Plugin : BaseUnityPlugin {
+        internal static CIConfig CIConfig;
+        public static CustomComputer CustomComputer;
+        public static CommandHandler CommandHandler;
+        
         /// <summary>
         /// Specifies if the plugin is loaded
         /// </summary>
         public bool Loaded { get; private set; }
-
-        private void Awake()
-        {
-            Load();
+        
+        private void Awake() {
+            GorillaTagger.OnPlayerSpawned(delegate {
+                try {
+                    Load();
+                }
+                catch (Exception exception) {
+                    Debug.LogError($"Failed to load ComputerInterface: {exception}");
+                }
+            });
         }
 
         private void Load()
@@ -25,8 +34,11 @@ namespace ComputerInterface
             HarmonyPatches.ApplyHarmonyPatches();
 
             Debug.Log("Computer Interface loading");
-
-            Zenjector.Install<MainInstaller>().OnProject().WithConfig(Config).WithLog(Logger);
+            
+            CIConfig = new CIConfig(Config);
+            CustomComputer = FindObjectOfType<GorillaComputer>().gameObject.AddComponent<CustomComputer>();
+            CustomComputer.Construct();
+            CommandHandler = new CommandHandler();
 
             Loaded = true;
         }

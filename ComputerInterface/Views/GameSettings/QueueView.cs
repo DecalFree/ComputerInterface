@@ -4,6 +4,7 @@ using ComputerInterface.ViewLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ComputerInterface.Queues;
 
 namespace ComputerInterface.Views.GameSettings
 {
@@ -12,13 +13,16 @@ namespace ComputerInterface.Views.GameSettings
         private readonly List<IQueueInfo> _queues;
         private readonly UISelectionHandler _selectionHandler;
 
-        public QueueView(List<IQueueInfo> queues)
-        {
-            _queues = queues;
+        public QueueView() {
+            _queues = [
+                new DefaultQueue(),
+                new CompetitiveQueue(),
+                new MinigamesQueue()
+            ];
 
             _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down);
             _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
-            _selectionHandler.MaxIdx = queues.Count;
+            _selectionHandler.MaxIdx = _queues.Count;
         }
 
         public override void OnShow(object[] args)

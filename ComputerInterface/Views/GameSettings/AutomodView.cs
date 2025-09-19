@@ -8,7 +8,7 @@ namespace ComputerInterface.Views.GameSettings
     {
         private readonly UISelectionHandler _selectionHandler;
 
-        private AutomodView()
+        public AutomodView()
         {
             _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down);
             _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");

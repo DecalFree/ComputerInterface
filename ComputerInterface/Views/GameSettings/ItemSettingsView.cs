@@ -11,7 +11,7 @@ namespace ComputerInterface.Views.GameSettings
 
         private float _insVolumeFloat = 0.10f;
 
-        private ItemSettingsView()
+        public ItemSettingsView()
         {
             _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down);
             _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");

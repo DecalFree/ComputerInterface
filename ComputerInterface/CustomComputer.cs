@@ -14,11 +14,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Zenject;
 
 namespace ComputerInterface
 {
-    public class CustomComputer : MonoBehaviour, IInitializable
+    public class CustomComputer : MonoBehaviour
     {
         private bool _initialized;
 
@@ -26,9 +25,7 @@ namespace ComputerInterface
         private ComputerViewController _computerViewController;
 
         private readonly Dictionary<Type, IComputerView> _cachedViews = new();
-
-        private ComputerViewPlaceholderFactory _viewFactory;
-
+        
         private MainMenuView _mainMenuView;
         private WarnView _warningView;
 
@@ -38,43 +35,40 @@ namespace ComputerInterface
 
         private readonly Mesh CubeMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
 
-        private AssetsLoader _assetsLoader;
-
         private CIConfig _config;
 
         private AudioClip _clickSound;
 
         private bool _internetConnected => Application.internetReachability != NetworkReachability.NotReachable;
         private bool _connectionError;
-
+        
         void Awake()
         {
             enabled = false;
         }
 
-        [Inject]
-        internal async void Construct(
-            CIConfig config,
-            AssetsLoader assetsLoader,
-            MainMenuView mainMenuView,
-            WarnView warningView,
-            ComputerViewPlaceholderFactory viewFactory,
-            List<IComputerModEntry> computerModEntries
-            )
-        {
+        internal async void Construct() {
             if (_initialized) return;
             _initialized = true;
 
+            List<IComputerModEntry> computerModEntries = [
+                new GameSettingsEntry(),
+                new CommandLineEntry(),
+                new DetailsEntry(),
+                new ModListEntry()
+            ];
+            var modAssemblies = Chainloader.PluginInfos.Values.Select(pluginInfo => pluginInfo.Instance.GetType().Assembly).Distinct();
+            var modEntryTypes = modAssemblies.SelectMany(assembly => assembly.GetTypes()).Where(type => typeof(IComputerModEntry).IsAssignableFrom(type) && !type.IsInterface);
+            var modEntries = modEntryTypes.Select(type => (IComputerModEntry)Activator.CreateInstance(type)).Where(entry => computerModEntries.All(existingEntry => existingEntry.GetType() != entry.GetType()));
+            computerModEntries.AddRange(modEntries);
+
             Debug.Log($"Found {computerModEntries.Count} physicalComputer mod entries");
 
-            _config = config;
-            _assetsLoader = assetsLoader;
+            _config = Plugin.CIConfig;
 
-            _mainMenuView = mainMenuView;
-            _warningView = warningView;
+            _mainMenuView = new MainMenuView();
+            _warningView = new WarnView();
             _cachedViews.Add(typeof(MainMenuView), _mainMenuView);
-
-            _viewFactory = viewFactory;
 
             _gorillaComputer = GetComponent<GorillaComputer>();
             _gorillaComputer.enabled = false;
@@ -85,9 +79,10 @@ namespace ComputerInterface
             _computerViewController.OnTextChanged += SetText;
             _computerViewController.OnSwitchView += SwitchView;
             _computerViewController.OnSetBackground += SetBGImage;
+            Debug.Log($"Found {SceneManager.GetActiveScene().GetComponentsInHierarchy<GorillaComputerTerminal>().Count} Computers in GorillaTag scene.");
             PrepareMonitor(SceneManager.GetActiveScene(), SceneManager.GetActiveScene().GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath());
 
-            _clickSound = await _assetsLoader.GetAsset<AudioClip>("ClickSound");
+            _clickSound = await AssetsLoader.GetAsset<AudioClip>("ClickSound");
 
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
@@ -266,7 +261,7 @@ namespace ComputerInterface
                 return view;
             }
 
-            ComputerView newView = _viewFactory.Create(type);
+            ComputerView newView = (ComputerView)Activator.CreateInstance(type);
             _cachedViews.Add(type, newView);
             return newView;
         }
@@ -389,9 +384,12 @@ namespace ComputerInterface
 
             // Forest
             Transform t = button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(name);
+            
+            // Custom Maps
+            t ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{name}");
 
             // Other Maps
-            t ??= button.transform.parent?.parent?.Find("Text/" + name);
+            t ??= button.transform.parent?.parent?.Find($"Text/{name}");
 
             return t.GetComponent<TextMeshPro>();
         }
@@ -431,7 +429,7 @@ namespace ComputerInterface
 
         private async Task<CustomScreenInfo> CreateMonitor(GameObject physicalComputer, string sceneName)
         {
-            GameObject monitorAsset = await _assetsLoader.GetAsset<GameObject>("Classic Monitor");
+            GameObject monitorAsset = await AssetsLoader.GetAsset<GameObject>("Classic Monitor");
             GameObject newMonitor = Instantiate(monitorAsset);
 
             newMonitor.name = $"Computer Interface (Scene - {sceneName})";

@@ -11,9 +11,8 @@ namespace ComputerInterface.Views
 
         private readonly UISelectionHandler _selectionHandler;
 
-        public ModView(CIConfig config)
-        {
-            _config = config;
+        public ModView() {
+            _config = Plugin.CIConfig;
             _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down, EKeyboardKey.Enter);
             _selectionHandler.OnSelected += OnOptionSelected;
             _selectionHandler.MaxIdx = 1;

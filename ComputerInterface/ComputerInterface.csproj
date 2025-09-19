@@ -22,9 +22,6 @@
 		<Reference Include="BepInEx">
 			<HintPath>$(BepInExAssemblyPath)\BepInEx.dll</HintPath>
 		</Reference>
-		<Reference Include="Bepinject">
-			<HintPath>$(PluginsPath)\Core Mods\Bepinject\Bepinject.dll</HintPath>
-		</Reference>
 		<Reference Include="Fusion.Runtime">
 		  <HintPath>$(GameAssemblyPath)\Fusion.Runtime.dll</HintPath>
 		</Reference>
@@ -72,12 +69,6 @@
 		</Reference>
 		<Reference Include="UnityEngine.UI">
 			<HintPath>$(GameAssemblyPath)\UnityEngine.UI.dll</HintPath>
-		</Reference>
-		<Reference Include="Zenject">
-			<HintPath>$(PluginsPath)\Core Mods\Extenject\Zenject.dll</HintPath>
-		</Reference>
-		<Reference Include="Zenject-usage">
-			<HintPath>$(PluginsPath)\Core Mods\Extenject\Zenject-usage.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

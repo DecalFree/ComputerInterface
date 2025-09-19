@@ -1,6 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
-using Bepinject;
+﻿using BepInEx.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +6,7 @@ using UnityEngine;
 
 namespace ComputerInterface
 {
-    internal class CIConfig
-    {
+    internal class CIConfig {
         public ConfigEntry<Color> ScreenBackgroundColor;
         public ConfigEntry<string> ScreenBackgroundPath;
         public Texture BackgroundTexture;
@@ -17,13 +14,11 @@ namespace ComputerInterface
         private readonly ConfigEntry<string> _disabledMods;
         private List<string> _disabledModsList;
 
-        public CIConfig(BepInConfig config)
+        public CIConfig(ConfigFile config)
         {
-            ConfigFile file = config.Config;
-
-            ScreenBackgroundColor = file.Bind("Appearance", "ScreenBackgroundColor", new Color(0.05f, 0.05f, 0.05f), "The background colour of the monitor screen");
-            ScreenBackgroundPath = file.Bind("Appearance", "ScreenBackgroundPath", "BepInEx/plugins/ComputerInterface/background.png", "The background image of the monitor screen");
-            _disabledMods = file.Bind("Data", "DisabledMods", "", "The list of mods disabled by the ComputerInterface mod");
+            ScreenBackgroundColor = config.Bind("Appearance", "ScreenBackgroundColor", new Color(0.05f, 0.05f, 0.05f), "The background colour of the monitor screen");
+            ScreenBackgroundPath = config.Bind("Appearance", "ScreenBackgroundPath", "BepInEx/plugins/ComputerInterface/background.png", "The background image of the monitor screen");
+            _disabledMods = config.Bind("Data", "DisabledMods", "", "The list of mods disabled by the ComputerInterface mod");
 
             BackgroundTexture = GetTexture(ScreenBackgroundPath.Value);
             DeserializeDisabledMods();

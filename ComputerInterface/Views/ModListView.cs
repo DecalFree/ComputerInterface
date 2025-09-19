@@ -70,9 +70,8 @@ namespace ComputerInterface.Views
         private readonly UIElementPageHandler<ModListItem> _pageHandler;
         private readonly UISelectionHandler _selectionHandler;
 
-        public ModListView(CIConfig config)
-        {
-            _config = config;
+        public ModListView() {
+            _config = Plugin.CIConfig;
 
             System.Collections.Generic.IEnumerable<BepInEx.PluginInfo> pluginInfos = Chainloader.PluginInfos.Values.Where(plugin => !plugin.Metadata.GUID.Contains(PluginInfo.Id));
             _plugins = pluginInfos.Select(plugin => new ModListItem(plugin, _config)).OrderBy(x => !x.Supported).ToArray();

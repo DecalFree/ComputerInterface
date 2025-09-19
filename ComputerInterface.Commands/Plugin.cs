@@ -1,5 +1,6 @@
-﻿using BepInEx;
-using Bepinject;
+﻿using System;
+using BepInEx;
+using UnityEngine;
 
 namespace ComputerInterface.Commands
 {
@@ -9,10 +10,16 @@ namespace ComputerInterface.Commands
     {
         public const string PLUGIN_ID = "tonimacaroni.computerinterface.commands";
         public const string PLUGIN_NAME = "Computer Interface Commands";
-
-        void Awake()
-        {
-            Zenjector.Install<MainInstaller>().OnProject();
+        
+        private void Awake() {
+            GorillaTagger.OnPlayerSpawned(delegate {
+                try {
+                    new CommandRegistrar().Initialize();
+                }
+                catch (Exception exception) {
+                    Debug.LogError($"Failed to load ComputerInterface.Commands: {exception}");
+                }
+            });
         }
     }
 }

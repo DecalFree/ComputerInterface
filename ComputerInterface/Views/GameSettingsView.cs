@@ -21,7 +21,7 @@ namespace ComputerInterface.Views
 
         private readonly List<Tuple<string, Type>> _gameSettingsViews;
 
-        private GameSettingsView()
+        public GameSettingsView()
         {
             _gameSettingsViews = new List<Tuple<string, Type>>
             {
