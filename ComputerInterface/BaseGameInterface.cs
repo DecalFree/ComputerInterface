@@ -2,10 +2,10 @@ using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using GorillaNetworking;
 using GorillaTagScripts;
-using GorillaTagScripts.ModIO;
 using Photon.Pun;
 using System;
 using System.Threading.Tasks;
+using GorillaTagScripts.VirtualStumpCustomMaps;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -70,9 +70,8 @@ namespace ComputerInterface
                     FriendshipGroupDetection.Instance.LeaveParty();
                 }
 
-                if (computer.IsPlayerInVirtualStump())
-                {
-                    CustomMapManager.UnloadMod(false);
+                if (computer.IsPlayerInVirtualStump()) {
+                    CustomMapManager.UnloadMap(false);
                 }
 
                 PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(roomId, FriendshipGroupDetection.Instance.IsInParty ? JoinType.JoinWithParty : JoinType.Solo);
