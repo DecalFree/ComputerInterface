@@ -8,6 +8,7 @@ using GorillaNetworking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using HarmonyLib;
 using TMPro;
@@ -41,6 +42,8 @@ namespace ComputerInterface
 
         private bool _internetConnected => Application.internetReachability != NetworkReachability.NotReachable;
         private bool _connectionError;
+
+        private readonly HttpClient _httpClient = new();
         
         void Awake()
         {
@@ -94,6 +97,20 @@ namespace ComputerInterface
             }
             catch (Exception ex) { Debug.LogError($"CI: Failed to successfully end initalizing the mod: {ex}"); }
 
+            try {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "https://raw.githubusercontent.com/DecalFree/ComputerInterface/main/Version.txt");
+            
+                using var response = await _httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                var latestVersion = (await response.Content.ReadAsStringAsync()).Trim();
+
+                if (!string.Equals(PluginInfo.Version, latestVersion, StringComparison.OrdinalIgnoreCase))
+                    _computerViewController.SetView(_warningView, [ new WarnView.GeneralWarning("A new version of Computer Interface is available.\nIt is recommended to update to avoid any issues.") ]);
+            }
+            catch (Exception exception) {
+                Debug.LogError($"CI: Failed to check version: {exception}");
+            }
+            
             enabled = true;
             Debug.Log("Initialized computers");
         }
