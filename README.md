@@ -9,6 +9,7 @@ Main project contributors:
 - [Dev](https://github.com/developer9998)
 - [A Haunted Army](https://github.com/AHauntedArmy)
 - [Fchb1239](https://github.com/fchb1239)
+- [DecalFree](https://github.com/decalfree)
 
 You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord.gg/monkemod).
 
@@ -23,8 +24,8 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 
 ## Install
 
-The recommended way to install Computer Interface is through [MonkeModManager](https://github.com/DeadlyKitten/MonkeModManager/releases/latest). Simply select Computer Interface from the menu, and hit "Install/Update".
-This will ensure you have all the necessary dependencies set up.
+The recommended way to install Computer Interface is through [MonkeModManager](https://github.com/arielthemonke/MonkeModManager/releases/latest). Simply select Computer Interface from the menu, and hit "Install".
+This will ensure you have all the necessary things to use Computer Interface.
 
 ## CommandLine
 
@@ -70,15 +71,14 @@ You can also run ``setbg 255 255 255`` to leave the background with no modified 
 
 Before you begin reading I have created a very well-documented example mod which you can use as a starting point.  
 It shows examples for creating multiple views, navigating between those and creating your own commands:  
-<https://github.com/ToniMacaroni/ComputerInterfaceExample>
+<https://github.com/DecalFree/ComputerInterfaceExample>
 
 For more advanced examples check out the base library views here:  
-<https://github.com/ToniMacaroni/ComputerInterface/tree/main/ComputerInterface/Views>
+<https://github.com/DecalFree/ComputerInterface/tree/main/ComputerInterface/Views>
 
 ### Adding Views
 
 Computer Interface works with "Views" which are classes that inherit from `ComputerView` or `IComputerView`.
-Instantiation, injection, and caching are all handled by Computer Interface with Zenject. You can get bound types through the constructor, and Zenject will handle the dependency injection.
 
 Views can navigate to others views through `ShowView<TargetView>()`, or return to the main menu with `ReturnToMainMenu()`.
 Views can check for key presses by overriding `OnKeyPressed`.
@@ -86,97 +86,105 @@ Views can check for key presses by overriding `OnKeyPressed`.
 An example view may look like this:
 
 ```csharp
-public class MyModView : ComputerView
-    {
-        // This is called when your view is opened
-        public override void OnShow()
-        {
-            base.OnShow();
-            // Changing the Text property will fire a PropertyChanged event
-            // which lets the computer know the text has changed and updates it
-            Text = "Monkey Computer\nMonkey Computer\nMounkey Computer";
-        }
+public class ExampleView : ComputerView {
+    // Called when the view is opened by the user.
+    public override void OnShow(object[] args) {
+        base.OnShow(args);
+        
+        // A 'Redraw' method is usually made for easier reading.
+        Redraw();
+    }
+    
+    // The method that usually handles the text on the screen.
+    private void Redraw() {
+        // A StringBuilder is usually made for easy text making.
+        var stringBuilder = new StringBuilder();
+        
+        // Uses the top of the screen to showoff what tab you are currently on.
+        stringBuilder.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
+        stringBuilder.Append("Example Tab").AppendLine();
+        stringBuilder.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
+        
+        // Makes text below the "titlebar".
+        stringBuilder.AppendLine("Computer Interface Example!");
+        
+        Text = stringBuilder.ToString();
+    }
 
-        // You can do something on keypresses by overriding "OnKeyPressed"
-        // It gets an EKeyboardKey passed as a parameter which wraps the old character string
-        public override void OnKeyPressed(EKeyboardKey key)
-        {
-            switch (key)
-            {
-                case EKeyboardKey.Back:
-                    // "ReturnToMainMenu" will switch to the main menu again
-                    ReturnToMainMenu();
-                    break;
-                case EKeyboardKey.Option1:
-                    // If you want to switch to another view you can do it like this
-                    ShowView<MyOtherModView>();
-                    break;
-            }
+    // When a key on the keyboard is pressed, the key pressed is sent back as a parameter to be used.
+    public override void OnKeyPressed(EKeyboardKey key) {
+        switch (key) {
+            case EKeyboardKey.Back:
+                // 'ReturnToMainMenu();' is used to return to the MainMenuView.
+                // 'ShowView<ViewToShow>();' can be used to switch to another view.
+                ReturnToMainMenu();
+                break;
+            case EKeyboardKey.Option1:
+                // 'ShowView<TargetView>();' can be used to switch to another view.
+                ShowView<ExampleHelpView>();
+                break;
         }
     }
+}
 ```
 
-To add a view to the main menu, you need to create a Mod Entry, and bind it with Zenject.
+To add a view to the main menu, you need to create a Mod Entry, and Computer Interface will automatically detect it on launch.
 Mod Entries must implement `IComputerModEntry`, and provide the name type of the view to be shown.
 
 For example:
 
 ```csharp
-public class MyModEntry : IComputerModEntry
-    {
-        // This is the name that will be shown on the main menu
-        public string EntryName => "MyMod";
-
-        // This is the first view that is going to be shown if the user selects you mod
-        // The Computer Interface mod will instantiate your view 
-        public Type EntryViewType => typeof(MyModView);
-    }
+// A selectable entry on the MainMenuView.
+// Entries are automatically detected by ComputerInterface.
+public class ExampleViewEntry : IComputerModEntry {
+    // The name of the entry that will be shown.
+    public string EntryName => "Example";
+    
+    // The first view that the user is going to see when selecting your entry.
+    public Type EntryViewType => typeof(ExampleView);
+}
 ```
-
-To tell Computer Interface that the entry exists, you must bind it with Zenject like so:
-
-```csharp
-Container.Bind<IComputerModEntry>().To<MyModEntry>().AsSingle();
-```
-
-This is generally done in your `MainInstaller`, see the example [MainInstaller.cs](https://github.com/ToniMacaroni/ComputerInterfaceExample/blob/main/ComputerModExample/MainInstaller.cs) for a full example.
 
 ### Adding Your Own Commands
 
 Adding your own CLI commands is easy.  
-In a type that you bound via Zenject request the `CommandHandler` and add your command.
+Just have something that registers the commands somewhere in your code, preferably in your `Plugin` class.
 
 For example:
-
 ```csharp
-internal class MyModCommandManager : IInitializable
-    {
-        private readonly CommandHandler _commandHandler;
-
-        // Request the CommandHandler
-        // This gets resolved by zenject since we bind MyModCommandManager in the container
-        public MyModCommandManager(CommandHandler commandHandler)
-        {
-            _commandHandler = commandHandler;
-        }
-
-        public void Initialize()
-        {
-            // Add a command
-            _commandHandler.AddCommand(new Command(name: "whoami", argumentCount: 0, args =>
-            {
-                // Args is an array of arguments (string) passed when entering the command
-                // The command handler already checks if the correct amount of arguments is passed
-
-                // The string you return is going to be shown in the terminal as a return message
-                // you can break up the message into multiple lines by using \n
-                return "MONKE";
-            }));
-        }
-    }
+new YourCommandManagerClass().Initialize();
 ```
 
-This used a dummy class `MyModCommandManager`, but of course, you can do this in any type as long as you request the `CommandHandler`.
+Command Manager class example:
+
+```csharp
+public class ExampleCommandManager {
+    private CommandHandler _commandHandler;
+    
+    public void Initialize() {
+        // Request the CommandHandler.
+        _commandHandler = ComputerInterface.Plugin.CommandHandler;
+
+        RegisterCommands();
+    }
+
+    private void RegisterCommands() {
+        // Register your commands.
+        
+        // You can set 'argumentTypes' to null if you aren't going to have any.
+        _commandHandler.AddCommand(new Command(name: "monke", argumentTypes: null, arguments => {
+            // Arguments are an array of strings passed when entering the command.
+            // The CommandHandler already checks if the correct amount of arguments is passed.
+            
+            // The string you return is going to be shown in the terminal as a return message.
+            // You can break up the message into multiple lines by using '\n'
+            return "MONKE";
+        }));
+    }
+}
+```
+
+This used a dummy class `ExampleCommandManager`, but of course, you can do this in any type as long as you request the `CommandHandler`.
 
 ## Disclaimers
 
