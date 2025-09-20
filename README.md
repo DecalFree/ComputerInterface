@@ -152,7 +152,11 @@ Just have something that registers the commands somewhere in your code, preferab
 
 For example:
 ```csharp
-new YourCommandManagerClass().Initialize();
+public Plugin() {
+        GorillaTagger.OnPlayerSpawned(delegate {
+          new TargetCommandsClass().Initialize();
+        });
+    }
 ```
 
 Command Manager class example:
