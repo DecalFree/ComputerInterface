@@ -267,28 +267,44 @@ namespace ComputerInterface
 
         public static void SetPttMode(EPTTMode mode)
         {
-            if (!CheckForComputer(out GorillaComputer computer)) return;
-
-            string modeString = mode switch
+            try
             {
-                EPTTMode.AllChat => "ALL CHAT",
-                EPTTMode.PushToTalk => "PUSH TO TALK",
-                EPTTMode.PushToMute => "PUSH TO MUTE",
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                if (!CheckForComputer(out GorillaComputer computer)) return;
 
-            computer.pttType = modeString;
-            PlayerPrefs.SetString("pttType", modeString);
-            PlayerPrefs.Save();
+                string modeString = mode switch
+                {
+                    EPTTMode.AllChat => "OPEN MIC",
+                    EPTTMode.PushToTalk => "PUSH TO TALK",
+                    EPTTMode.PushToMute => "PUSH TO MUTE",
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                computer.pttType = modeString;
+                PlayerPrefs.SetString("pttType", modeString);
+                PlayerPrefs.Save();
+            }
+            catch (Exception e) 
+            {
+                Debug.LogError($"Ci: SetPttMode failed most likely due to an unknown Ptt state.\n{e}");
+            }
+            
         }
 
-        public static EPTTMode GetPttMode() => PlayerPrefs.GetString("pttType", "ALL CHAT") switch
+        public static EPTTMode GetPttMode()
         {
-            "ALL CHAT" => EPTTMode.AllChat,
-            "PUSH TO TALK" => EPTTMode.PushToTalk,
-            "PUSH TO MUTE" => EPTTMode.PushToMute,
-            _ => throw new ArgumentOutOfRangeException()
-        };
+            switch (PlayerPrefs.GetString("pttType", "OPEN MIC"))
+            {
+                case "OPEN MIC":
+                    return EPTTMode.AllChat;
+                case "PUSH TO TALK":
+                    return EPTTMode.PushToTalk;
+                case "PUSH TO MUTE":
+                    return EPTTMode.PushToMute; 
+                default: 
+                    Debug.LogError(PlayerPrefs.GetString("pttType", "OPEN MIC"));
+                    return EPTTMode.Unknown; 
+            };
+        }
 
         #endregion
 
@@ -304,6 +320,7 @@ namespace ComputerInterface
             PlayerPrefs.Save();
 
             RigContainer.RefreshAllRigVoices();
+            
         }
 
         public static bool GetVoiceMode() => PlayerPrefs.GetString("voiceChatOn", "TRUE") == "TRUE";
@@ -587,7 +604,8 @@ namespace ComputerInterface
         {
             AllChat,
             PushToTalk,
-            PushToMute
+            PushToMute,
+            Unknown,
         }
 
         public enum EAutomodMode
