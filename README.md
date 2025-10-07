@@ -47,6 +47,8 @@ By default Computer Interface ships with the following commands:
   Changes your spectator camera's perspective to either First Person (fp) or Third Person (tp)
 - **setbg** ``int`` ``int`` ``int``  
   Changes your computer's background color (e.g. setbg 40 70 40)
+- **resetbg**  
+  Resets the computer's background.
 
 ## Background
 
@@ -57,7 +59,8 @@ To use a custom background image:
   - Use forward slashes (/) instead of backslashes (\\) in the path
   - Your background will be multiplied by the background's color
   - Paths can either be relative to your Gorilla Tag folder or absolute.
-  
+
+As of Computer Interface version 1.9.0, using the `resetbg` makes it easier to change you background without the need to restart your game.  
 You can also run ``setbg 255 255 255`` to leave the background with no modified color.
 
 ## Additional Features
@@ -80,7 +83,7 @@ For more advanced examples check out the base library views here:
 
 Computer Interface works with "Views" which are classes that inherit from `ComputerView` or `IComputerView`.
 
-Views can navigate to others views through `ShowView<TargetView>()`, or return to the main menu with `ReturnToMainMenu()`.
+Views can navigate to others views through `ShowView<TargetView>()`, or return to the main menu with `ReturnToMainMenu()`.  
 Views can check for key presses by overriding `OnKeyPressed`.
 
 An example view may look like this:
@@ -128,7 +131,7 @@ public class ExampleView : ComputerView {
 }
 ```
 
-To add a view to the main menu, you need to create a Mod Entry, and Computer Interface will automatically detect it on launch.
+To add a view to the main menu, you need to create a Mod Entry, and Computer Interface will automatically detect it on launch.  
 Mod Entries must implement `IComputerModEntry`, and provide the name type of the view to be shown.
 
 For example:
@@ -147,32 +150,22 @@ public class ExampleViewEntry : IComputerModEntry {
 
 ### Adding Your Own Commands
 
-Adding your own CLI commands is easy.  
-Just have something that registers the commands somewhere in your code, preferably in your `Plugin` class.
+Adding your own CLI commands is easy - create a class that inherits `ICommandRegistrar`, and Computer Interface will automatically detect it on launch.
 
 For example:
-```csharp
-public Plugin() {
-        GorillaTagger.OnPlayerSpawned(delegate {
-          new TargetCommandsClass().Initialize();
-        });
-    }
-```
-
-Command Manager class example:
 
 ```csharp
-public class ExampleCommandManager {
+public class ExampleCommandManager : ICommandRegistrar {
     private CommandHandler _commandHandler;
     
     public void Initialize() {
         // Request the CommandHandler.
-        _commandHandler = ComputerInterface.Plugin.CommandHandler;
+        _commandHandler = CommandHandler.Singleton;
 
         RegisterCommands();
     }
 
-    private void RegisterCommands() {
+    public void RegisterCommands() {
         // Register your commands.
         
         // You can set 'argumentTypes' to null if you aren't going to have any.

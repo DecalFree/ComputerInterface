@@ -1,28 +1,28 @@
 ﻿using System;
+using ComputerInterface.Behaviours;
+using ComputerInterface.Enumerations;
+using ComputerInterface.Interfaces;
+using ComputerInterface.Models;
 using UnityEngine;
 
-namespace ComputerInterface.Commands
-{
-    public class CommandRegistrar
-    {
+namespace ComputerInterface.Commands {
+    public class CommandRegistrar : ICommandRegistrar {
         private CommandHandler _commandHandler;
         private CustomComputer _computer;
 
         public void Initialize() {
-            _commandHandler = ComputerInterface.Plugin.CommandHandler;
-            _computer = ComputerInterface.Plugin.CustomComputer;
+            _commandHandler = CommandHandler.Singleton;
+            _computer = CustomComputer.Singleton;
             
             RegisterCommands();
         }
 
-        public void RegisterCommands()
-        {
+        public void RegisterCommands() {
             // setcolor: setcolor <r> <g> <b>
-            _commandHandler.AddCommand(new Command("setcolor", new[] { typeof(float), typeof(float), typeof(float) }, args =>
-            {
-                float r = (float)args[0];
-                float g = (float)args[1];
-                float b = (float)args[2];
+            _commandHandler.AddCommand(new Command("setcolor", new[] { typeof(float), typeof(float), typeof(float) }, args => {
+                var r = (float)args[0];
+                var g = (float)args[1];
+                var b = (float)args[2];
 
                 if (r > 0) r /= 255;
                 if (g > 0) g /= 255;
@@ -33,22 +33,18 @@ namespace ComputerInterface.Commands
             }));
 
             // setname: setname <name>
-            _commandHandler.AddCommand(new Command("setname", new Type[] { typeof(string) }, args =>
-            {
-                string newName = ((string)args[0]).ToUpper();
+            _commandHandler.AddCommand(new Command("setname", new[] { typeof(string) }, args => {
+                var newName = ((string)args[0]).ToUpper();
 
-                BaseGameInterface.WordCheckResult result = BaseGameInterface.SetName(newName);
+                var result = BaseGameInterface.SetName(newName);
 
-                if (result == BaseGameInterface.WordCheckResult.Allowed) return $"Updated name: {newName.Replace(" ", "")}";
-                else return $"Error: {BaseGameInterface.WordCheckResultToMessage(result)}";
+                return result == EWordCheckResult.Allowed ? $"Updated name: {newName.Replace(" ", "")}" : $"Error: {BaseGameInterface.WordCheckResultToMessage(result)}";
             }));
 
             // leave: leave
-            // disconnects from the current room
-            _commandHandler.AddCommand(new Command("leave", null, args =>
-            {
-                if (NetworkSystem.Instance.InRoom)
-                {
+            // Disconnects from the current room
+            _commandHandler.AddCommand(new Command("leave", null, args => {
+                if (NetworkSystem.Instance.InRoom) {
                     BaseGameInterface.Disconnect();
                     return "Left room!";
                 }
@@ -56,30 +52,27 @@ namespace ComputerInterface.Commands
             }));
 
             // join <roomId>
-            // join a private room
-            _commandHandler.AddCommand(new Command("join", new Type[] { typeof(string) }, args =>
-            {
-                string roomId = (string)args[0];
+            // Join a private room
+            _commandHandler.AddCommand(new Command("join", new[] { typeof(string) }, args => {
+                var roomId = (string)args[0];
 
                 roomId = roomId.ToUpper();
-                BaseGameInterface.WordCheckResult result = BaseGameInterface.JoinRoom(roomId);
+                var result = BaseGameInterface.JoinRoom(roomId);
 
-                if (result == BaseGameInterface.WordCheckResult.Allowed) return $"Joining room: {roomId}";
-                else return $"Error: {BaseGameInterface.WordCheckResultToMessage(result)}";
+                return result == EWordCheckResult.Allowed ? $"Joining room: {roomId}" : $"Error: {BaseGameInterface.WordCheckResultToMessage(result)}";
             }));
 
             // cam <fp|tp>
-            // sets the screen camera to either first or third person
-            _commandHandler.AddCommand(new Command("cam", new Type[] { typeof(string) }, args =>
-            {
-                Camera cam = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>();
-                if (cam == null) return "Error: Could not find camera";
+            // Sets the screen camera to either first or third person
+            _commandHandler.AddCommand(new Command("cam", new[] { typeof(string) }, args => {
+                var camera = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>();
+                if (camera == null)
+                    return "Error: Could not find camera";
 
-                string argString = (string)args[0];
+                var argString = (string)args[0];
 
-                if (argString == "fp" || argString == "tp")
-                {
-                    cam.enabled = argString == "tp";
+                if (argString == "fp" || argString == "tp") {
+                    camera.enabled = argString == "tp";
                     return $"Updated camera: {(argString == "tp" ? "Third" : "First")} person";
                 }
 
@@ -87,12 +80,11 @@ namespace ComputerInterface.Commands
             }));
 
             // setbg <r> <g> <b>
-            // sets the background of the screen
-            _commandHandler.AddCommand(new Command("setbg", new[] { typeof(float), typeof(float), typeof(float) }, args =>
-            {
-                float r = (float)args[0];
-                float g = (float)args[1];
-                float b = (float)args[2];
+            // Sets the background of the screen
+            _commandHandler.AddCommand(new Command("setbg", new[] { typeof(float), typeof(float), typeof(float) }, args => {
+                var r = (float)args[0];
+                var g = (float)args[1];
+                var b = (float)args[2];
 
                 if (r > 0) r /= 255;
                 if (g > 0) g /= 255;
@@ -101,6 +93,13 @@ namespace ComputerInterface.Commands
                 _computer.SetBG(r, g, b);
 
                 return $"Updated background:\n\nR: {r} ({args[0]})\nG: {g} ({args[1]})\nB: {b} ({args[2]})\n";
+            }));
+            
+            // resetbg
+            // Resets the background of the screen
+            _commandHandler.AddCommand(new Command("resetbg", null, args => {
+                _computer.SetBGImage(new ComputerViewChangeBackgroundEventArgs(_computer.GetTexture(_computer.GetScreenBackgroundPath())));
+                return "Successfully reset background";
             }));
         }
     }

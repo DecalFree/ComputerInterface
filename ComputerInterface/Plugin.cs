@@ -1,46 +1,35 @@
 using System;
 using BepInEx;
+using BepInEx.Logging;
+using ComputerInterface.Behaviours;
+using ComputerInterface.Models;
+using ComputerInterface.Tools;
 using GorillaNetworking;
-using UnityEngine;
+using HarmonyLib;
 
-namespace ComputerInterface
-{
-    [BepInPlugin(PluginInfo.Id, PluginInfo.Name, PluginInfo.Version)]
-    public class Plugin : BaseUnityPlugin {
-        internal static CIConfig CIConfig;
-        public static CustomComputer CustomComputer;
-        public static CommandHandler CommandHandler;
+namespace ComputerInterface;
+
+[BepInPlugin(Constants.Guid, Constants.Name, Constants.Version)]
+public class Plugin : BaseUnityPlugin {
+    internal new static ManualLogSource Logger;
+    
+    internal static CIConfig CIConfig;
+    
+    private void Awake() {
+        Logger = base.Logger;
         
-        /// <summary>
-        /// Specifies if the plugin is loaded
-        /// </summary>
-        public bool Loaded { get; private set; }
-        
-        private void Awake() {
-            GorillaTagger.OnPlayerSpawned(delegate {
-                try {
-                    Load();
-                }
-                catch (Exception exception) {
-                    Debug.LogError($"Failed to load ComputerInterface: {exception}");
-                }
-            });
-        }
+        GorillaTagger.OnPlayerSpawned(delegate {
+            try {
+                Harmony.CreateAndPatchAll(GetType().Assembly, Constants.Guid);
+                Logging.Info("Loading Computer Interface");
 
-        private void Load()
-        {
-            if (Loaded) return;
-
-            HarmonyPatches.ApplyHarmonyPatches();
-
-            Debug.Log("Computer Interface loading");
-            
-            CIConfig = new CIConfig(Config);
-            CustomComputer = FindObjectOfType<GorillaComputer>().gameObject.AddComponent<CustomComputer>();
-            CustomComputer.Construct();
-            CommandHandler = new CommandHandler();
-
-            Loaded = true;
-        }
+                CIConfig = new CIConfig(Config);
+                FindFirstObjectByType<GorillaComputer>().gameObject.AddComponent<CustomComputer>();
+                new CommandHandler();
+            }
+            catch (Exception exception) {
+                Logging.Error($"Failed to load Computer Interface: {exception}");
+            }
+        });
     }
 }

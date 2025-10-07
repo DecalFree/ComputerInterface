@@ -1,11 +1,5 @@
 ﻿using System;
 
-namespace ComputerInterface.Exceptions
-{
-    public class CommandAddException : Exception
-    {
-        public CommandAddException(string commandName, string message) : base($"Error adding command {commandName}\n{message}")
-        {
-        }
-    }
-}
+namespace ComputerInterface.Exceptions;
+
+public class CommandAddException(string commandName, string message) : Exception($"Error adding command {commandName}\n{message}");

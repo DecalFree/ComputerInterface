@@ -1,150 +1,122 @@
 ﻿using BepInEx.Bootstrap;
 using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
-using ComputerInterface.ViewLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ComputerInterface.Behaviours;
+using ComputerInterface.Enumerations;
+using ComputerInterface.Models;
+using ComputerInterface.Models.UI;
 
-namespace ComputerInterface.Views
-{
-    public class MainMenuView : ComputerView
-    {
-        private List<IComputerModEntry> _modEntries;
-        private readonly List<IComputerModEntry> _shownEntries;
-        private readonly Dictionary<IComputerModEntry, BepInEx.PluginInfo> _pluginInfoMap;
+namespace ComputerInterface.Views;
 
-        private readonly UIElementPageHandler<IComputerModEntry> _pageHandler;
-        private readonly UISelectionHandler _selectionHandler;
+public class MainMenuView : ComputerView {
+    private List<IComputerModEntry> _modEntries;
+    private readonly List<IComputerModEntry> _shownEntries = [];
+    private readonly Dictionary<IComputerModEntry, BepInEx.PluginInfo> _pluginInfoMap = new();
 
-        public MainMenuView()
-        {
-            _selectionHandler =
-                new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down, EKeyboardKey.Enter);
-            _selectionHandler.OnSelected += ShowModView;
-            _selectionHandler.ConfigureSelectionIndicator("<color=#ed6540>></color> ", "", "  ", "");
+    private readonly UIElementPageHandler<IComputerModEntry> _pageHandler = new(EKeyboardKey.Left, EKeyboardKey.Right) {
+        Footer = "<color=#ffffff50>{0}{1}        <align=\"right\"><margin-right=2em>Page {2}/{3}</margin></align></color>",
+        NextMark = "▼",
+        PrevMark = "▲",
+        EntriesPerPage = 8
+    };
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down, EKeyboardKey.Enter);
 
-            _pageHandler = new UIElementPageHandler<IComputerModEntry>(EKeyboardKey.Left, EKeyboardKey.Right);
-            _pageHandler.Footer = "<color=#ffffff50>{0}{1}        <align=\"right\"><margin-right=2em>Page {2}/{3}</margin></align></color>";
-            _pageHandler.NextMark = "▼";
-            _pageHandler.PrevMark = "▲";
-            _pageHandler.EntriesPerPage = 8;
+    public MainMenuView() {
+        _selectionHandler.OnSelected += ShowModView;
+        _selectionHandler.ConfigureSelectionIndicator("<color=#ed6540>></color> ", "", "  ", "");
+    }
 
-            _shownEntries = new List<IComputerModEntry>();
-            _pluginInfoMap = new Dictionary<IComputerModEntry, BepInEx.PluginInfo>();
+    public void ShowEntries(List<IComputerModEntry> entries) {
+        _modEntries = entries;
+
+        // Map entries to plugin infos
+        _pluginInfoMap.Clear();
+        foreach (var entry in entries) {
+            var assembly = entry.GetType().Assembly;
+            var pluginInfo = Chainloader.PluginInfos.Values.FirstOrDefault(x => x.Instance.GetType().Assembly == assembly);
+            if (pluginInfo != null)
+                _pluginInfoMap.Add(entry, pluginInfo);
         }
 
-        public void ShowEntries(List<IComputerModEntry> entries)
-        {
-            _modEntries = entries;
+        FilterEntries();
 
-            // Map entries to plugin infos
-            _pluginInfoMap.Clear();
-            foreach (IComputerModEntry entry in entries)
-            {
-                System.Reflection.Assembly asm = entry.GetType().Assembly;
-                BepInEx.PluginInfo pluginInfo =
-                    Chainloader.PluginInfos.Values.FirstOrDefault(x => x.Instance.GetType().Assembly == asm);
-                if (pluginInfo != null)
-                {
-                    _pluginInfoMap.Add(entry, pluginInfo);
-                }
+        Redraw();
+    }
+
+    private void FilterEntries() {
+        _shownEntries.Clear();
+        List<IComputerModEntry> customEntries = [];
+        foreach (var entry in _modEntries) {
+            if (!_pluginInfoMap.TryGetValue(entry, out var info))
+                continue;
+
+            if (info.Instance.GetType().Assembly == GetType().Assembly) {
+                _shownEntries.Add(entry);
             }
+            else {
+                customEntries.Add(entry);
+            }
+        }
+        _shownEntries.AddRange(customEntries);
+        _selectionHandler.MaxIdx = _shownEntries.Count - 1;
+        _pageHandler.SetElements(_shownEntries.ToArray());
+    }
 
-            FilterEntries();
+    private void Redraw() {
+        var stringBuilder = new StringBuilder();
 
+        DrawHeader(stringBuilder);
+        DrawMods(stringBuilder);
+
+        SetText(stringBuilder);
+    }
+
+    private void DrawHeader(StringBuilder stringBuilder) {
+        stringBuilder.BeginCenter().MakeBar('-', ScreenWidth, 0, "ffffff10");
+        stringBuilder.AppendClr(Constants.Name, PrimaryColor).EndColor().Append(" - v").Append(Constants.Version).AppendLine();
+
+        stringBuilder.Append("Computer Interface created by ").AppendClr("Toni Macaroni", "9be68a").AppendLine();
+
+        stringBuilder.MakeBar('-', ScreenWidth, 0, "ffffff10").EndAlign().AppendLine();
+    }
+
+    private void DrawMods(StringBuilder stringBuilder) {
+        var lineIdx = _pageHandler.MovePageToIdx(_selectionHandler.CurrentSelectionIndex);
+
+        _pageHandler.EnumerateElements((entry, idx) => {
+            stringBuilder.Append(_selectionHandler.GetIndicatedText(idx, lineIdx, entry.EntryName));
+            stringBuilder.AppendLine();
+        });
+
+        _pageHandler.AppendFooter(stringBuilder);
+        stringBuilder.AppendLine();
+    }
+
+    public override void OnShow(object[] args) {
+        base.OnShow(args);
+        if (_modEntries == null)
+            return;
+        FilterEntries();
+        Redraw();
+    }
+
+    public override void OnKeyPressed(EKeyboardKey key) {
+        if (_selectionHandler.HandleKeypress(key)) {
             Redraw();
+            return;
         }
 
-        public void FilterEntries()
-        {
-            _shownEntries.Clear();
-            List<IComputerModEntry> customEntries = new();
-            foreach (IComputerModEntry entry in _modEntries)
-            {
-                if (!_pluginInfoMap.TryGetValue(entry, out BepInEx.PluginInfo info)) continue;
-
-                if (info.Instance.GetType().Assembly == GetType().Assembly)
-                {
-                    _shownEntries.Add(entry);
-                }
-                else
-                {
-                    customEntries.Add(entry);
-                }
-            }
-            _shownEntries.AddRange(customEntries);
-            _selectionHandler.MaxIdx = _shownEntries.Count - 1;
-            _pageHandler.SetElements(_shownEntries.ToArray());
-        }
-
-        public void Redraw()
-        {
-            StringBuilder builder = new();
-
-            DrawHeader(builder);
-            DrawMods(builder);
-
-            SetText(builder);
-        }
-
-        public void DrawHeader(StringBuilder str)
-        {
-            str.BeginCenter().MakeBar('-', SCREEN_WIDTH, 0, "ffffff10");
-            str.AppendClr(PluginInfo.Name, PrimaryColor)
-                .EndColor()
-                .Append(" - v")
-                .Append(PluginInfo.Version).AppendLine();
-
-            str.Append("Computer Interface created by ").AppendClr("Toni Macaroni", "9be68a").AppendLine();
-
-            str.MakeBar('-', SCREEN_WIDTH, 0, "ffffff10").EndAlign().AppendLine();
-        }
-
-        public void DrawMods(StringBuilder str)
-        {
-            int lineIdx = _pageHandler.MovePageToIdx(_selectionHandler.CurrentSelectionIndex);
-
-            _pageHandler.EnumarateElements((entry, idx) =>
-            {
-                str.Append(_selectionHandler.GetIndicatedText(idx, lineIdx, entry.EntryName));
-                str.AppendLine();
-            });
-
-            _pageHandler.AppendFooter(str);
-            str.AppendLine();
-        }
-
-        public override void OnShow(object[] args)
-        {
-            base.OnShow(args);
-            if (_modEntries == null) return;
-            FilterEntries();
-            Redraw();
-        }
-
-        public override void OnKeyPressed(EKeyboardKey key)
-        {
-            if (_selectionHandler.HandleKeypress(key))
-            {
-                Redraw();
-                return;
-            }
-
-            switch (key)
-            {
-                case EKeyboardKey.Option1:
-                    if (NetworkSystem.Instance.InRoom)
-                    {
-                        BaseGameInterface.Disconnect();
-                    }
-                    break;
-            }
-        }
-
-        public void ShowModView(int idx)
-        {
-            ShowView(_shownEntries[idx].EntryViewType);
+        switch (key) {
+            case EKeyboardKey.Option1:
+                if (NetworkSystem.Instance.InRoom)
+                    BaseGameInterface.Disconnect();
+                break;
         }
     }
+
+    private void ShowModView(int idx) =>
+        ShowView(_shownEntries[idx].EntryViewType);
 }

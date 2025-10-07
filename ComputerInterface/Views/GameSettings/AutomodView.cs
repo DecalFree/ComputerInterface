@@ -1,60 +1,53 @@
 ﻿using ComputerInterface.Extensions;
-using ComputerInterface.ViewLib;
 using System.Text;
+using ComputerInterface.Behaviours;
+using ComputerInterface.Enumerations;
+using ComputerInterface.Models;
+using ComputerInterface.Models.UI;
 
-namespace ComputerInterface.Views.GameSettings
-{
-    public class AutomodView : ComputerView
-    {
-        private readonly UISelectionHandler _selectionHandler;
+namespace ComputerInterface.Views.GameSettings;
 
-        public AutomodView()
-        {
-            _selectionHandler = new UISelectionHandler(EKeyboardKey.Up, EKeyboardKey.Down);
-            _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
-            _selectionHandler.MaxIdx = 2;
-        }
+public class AutomodView : ComputerView {
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down);
 
-        public override void OnShow(object[] args)
-        {
-            base.OnShow(args);
+    public AutomodView() {
+        _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
+        _selectionHandler.MaxIdx = 2;
+    }
 
-            _selectionHandler.CurrentSelectionIndex = (int)BaseGameInterface.GetAutomodMode();
-            Redraw();
-        }
+    public override void OnShow(object[] args) {
+        base.OnShow(args);
 
-        private void Redraw()
-        {
-            StringBuilder str = new();
+        _selectionHandler.CurrentSelectionIndex = (int)BaseGameInterface.GetAutomodMode();
+        Redraw();
+    }
 
-            str.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
-            str.Append("Automod Tab").AppendLine();
-            str.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
+    private void Redraw() {
+        var stringBuilder = new StringBuilder();
 
-            str.AppendLine("Automod Mode: ");
-            str.Append(_selectionHandler.GetIndicatedText(0, "Off")).AppendLine()
-                .Append(_selectionHandler.GetIndicatedText(1, "Moderate")).AppendLine()
-                .Append(_selectionHandler.GetIndicatedText(2, "Aggressive")).AppendLines(2);
+        stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.Append("Automod Tab").AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
 
-            Text = str.ToString();
-        }
+        stringBuilder.AppendLine("Automod Mode: ");
+        stringBuilder.Append(_selectionHandler.GetIndicatedText(0, "Off")).AppendLine()
+            .Append(_selectionHandler.GetIndicatedText(1, "Moderate")).AppendLine()
+            .Append(_selectionHandler.GetIndicatedText(2, "Aggressive")).AppendLines(2);
 
-        public override void OnKeyPressed(EKeyboardKey key)
-        {
-            switch (key)
-            {
-                case EKeyboardKey.Back:
-                    ShowView<GameSettingsView>();
-                    break;
-                default:
-                    if (_selectionHandler.HandleKeypress(key))
-                    {
-                        BaseGameInterface.SetAutomodMode(_selectionHandler.CurrentSelectionIndex);
-                        Redraw();
-                        return;
-                    }
-                    break;
-            }
+        Text = stringBuilder.ToString();
+    }
+
+    public override void OnKeyPressed(EKeyboardKey key) {
+        switch (key) {
+            case EKeyboardKey.Back:
+                ShowView<GameSettingsView>();
+                break;
+            default:
+                if (_selectionHandler.HandleKeypress(key)) {
+                    BaseGameInterface.SetAutomodMode(_selectionHandler.CurrentSelectionIndex);
+                    Redraw();
+                }
+                break;
         }
     }
 }

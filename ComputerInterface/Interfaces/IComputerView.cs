@@ -1,21 +1,20 @@
-﻿using ComputerInterface.ViewLib;
-using System;
+﻿using System;
 using System.ComponentModel;
+using ComputerInterface.Enumerations;
+using ComputerInterface.Models;
 
-namespace ComputerInterface.Interfaces
-{
-    public interface IComputerView : INotifyPropertyChanged
-    {
-        string Text { get; set; }
+namespace ComputerInterface.Interfaces;
 
-        Type CallerViewType { get; set; }
+public interface IComputerView : INotifyPropertyChanged {
+    string Text { get; set; }
 
-        void OnKeyPressed(EKeyboardKey key);
+    Type CallerViewType { get; set; }
 
-        void OnShow(object[] args);
+    void OnKeyPressed(EKeyboardKey key);
 
-        event ComputerViewSwitchEventHandler OnViewSwitchRequest;
+    void OnShow(object[] args);
 
-        event ComputerViewChangeBackgroundEventHandler OnChangeBackgroundRequest;
-    }
+    event ComputerViewSwitchEventArgs.ComputerViewSwitchEventHandler OnViewSwitchRequest;
+
+    event ComputerViewChangeBackgroundEventArgs.ComputerViewChangeBackgroundEventHandler OnChangeBackgroundRequest;
 }

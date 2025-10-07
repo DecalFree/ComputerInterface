@@ -1,25 +1,10 @@
-﻿using System;
-using BepInEx;
-using UnityEngine;
+﻿using BepInEx;
 
-namespace ComputerInterface.Commands
-{
-    [BepInDependency(PluginInfo.Id)]
-    [BepInPlugin(PLUGIN_ID, PLUGIN_NAME, PluginInfo.Version)]
-    public class Plugin : BaseUnityPlugin
-    {
-        public const string PLUGIN_ID = "tonimacaroni.computerinterface.commands";
-        public const string PLUGIN_NAME = "Computer Interface Commands";
-        
-        private void Awake() {
-            GorillaTagger.OnPlayerSpawned(delegate {
-                try {
-                    new CommandRegistrar().Initialize();
-                }
-                catch (Exception exception) {
-                    Debug.LogError($"Failed to load ComputerInterface.Commands: {exception}");
-                }
-            });
-        }
+namespace ComputerInterface.Commands {
+    [BepInDependency(Constants.Guid)]
+    [BepInPlugin(PluginID, PluginName, Constants.Version)]
+    public class Plugin : BaseUnityPlugin {
+        private const string PluginID = "tonimacaroni.computerinterface.commands";
+        private const string PluginName = "Computer Interface Commands";
     }
 }

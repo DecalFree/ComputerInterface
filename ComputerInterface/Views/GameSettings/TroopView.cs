@@ -1,91 +1,82 @@
 ﻿using System.Text;
+using ComputerInterface.Behaviours;
+using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
-using ComputerInterface.ViewLib;
+using ComputerInterface.Models;
+using ComputerInterface.Models.UI;
 using UnityEngine;
 
 namespace ComputerInterface.Views.GameSettings;
 
-public class TroopView : ComputerView
-{
-    private readonly UITextInputHandler _textInputHandler;
-    private BaseGameInterface.WordCheckResult _wordCheckResult;
-    
-    public TroopView() => _textInputHandler = new UITextInputHandler();
-    
-    public override void OnShow(object[] args)
-    {
+public class TroopView : ComputerView {
+    private readonly UITextInputHandler _textInputHandler = new();
+    private EWordCheckResult _wordCheckResult;
+
+    public override void OnShow(object[] args) {
         base.OnShow(args);
         
         Redraw();
     }
 
-    private void Redraw()
-    {
+    private void Redraw() {
         BaseGameInterface.CheckForComputer(out var computer);
         
-        StringBuilder str = new();
+        var stringBuilder = new StringBuilder();
         
-        str.Repeat("=", SCREEN_WIDTH).AppendLine();
-        str.BeginCenter().Append("Troop Tab").AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.BeginCenter().Append("Troop Tab").AppendLine();
 
-        bool showState = !BaseGameInterface.IsInTroop();
+        var showState = !BaseGameInterface.IsInTroop();
         
-        if (showState)
-        {
-            switch (_wordCheckResult)
-            {
-                case BaseGameInterface.WordCheckResult.Allowed:
-                    str.AppendClr("Ready - Enter to Join or Create Troop", "ffffff50").EndAlign().AppendLine();
+        if (showState) {
+            switch (_wordCheckResult) {
+                case EWordCheckResult.Allowed:
+                    stringBuilder.AppendClr("Ready - Enter to Join or Create Troop", "ffffff50").EndAlign().AppendLine();
                     break;
-                case BaseGameInterface.WordCheckResult.Blank:
-                    str.AppendClr("Error - Troop is Blank", "ffffff50").EndAlign().AppendLine();
+                case EWordCheckResult.Blank:
+                    stringBuilder.AppendClr("Error - Troop is Blank", "ffffff50").EndAlign().AppendLine();
                     break;
-                case BaseGameInterface.WordCheckResult.Empty:
-                    str.AppendClr("Error - Troop is Empty", "ffffff50").EndAlign().AppendLine();
+                case EWordCheckResult.Empty:
+                    stringBuilder.AppendClr("Error - Troop is Empty", "ffffff50").EndAlign().AppendLine();
                     break;
-                case BaseGameInterface.WordCheckResult.TooLong:
-                    str.AppendClr("Error - Troop Exceeds Character Limit", "ffffff50").EndAlign().AppendLine();
+                case EWordCheckResult.TooLong:
+                    stringBuilder.AppendClr("Error - Troop Exceeds Character Limit", "ffffff50").EndAlign().AppendLine();
                     break;
-                case BaseGameInterface.WordCheckResult.NotAllowed:
-                    str.AppendClr("Error - Troop Inappropriate", "ffffff50").EndAlign().AppendLine();
+                case EWordCheckResult.NotAllowed:
+                    stringBuilder.AppendClr("Error - Troop Inappropriate", "ffffff50").EndAlign().AppendLine();
                     break;
             }
         }
 
-        str.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLine();
-        str.AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLine();
+        stringBuilder.AppendLine();
 
-        if (BaseGameInterface.IsValidTroopName(computer.troopName))
-        {
-            str.AppendLine($"Current Troop: {BaseGameInterface.GetCurrentTroop()}");
-            str.AppendLine($"Players In Troop: {Mathf.Max(1, computer.GetCurrentTroopPopulation())}");
+        if (BaseGameInterface.IsValidTroopName(computer.troopName)) {
+            stringBuilder.AppendLine($"Current Troop: {BaseGameInterface.GetCurrentTroop()}");
+            stringBuilder.AppendLine($"Players In Troop: {Mathf.Max(1, computer.GetCurrentTroopPopulation())}");
             
-            str.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append(computer.troopQueueActive ? "Press Option 2 for default queue." : "Press Option 1 for troop queue.");
-            str.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append("Press Option 3 to leave your troop.");
+            stringBuilder.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append(computer.troopQueueActive ? "Press Option 2 for default queue." : "Press Option 1 for troop queue.");
+            stringBuilder.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append("Press Option 3 to leave your troop.");
         }
-        else
-        {
-            str.BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
+        else {
+            stringBuilder.BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
             
-            str.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append("Press Enter to join or create a troop.");
+            stringBuilder.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append("Press Enter to join or create a troop.");
         }
 
-        Text = str.ToString();
+        Text = stringBuilder.ToString();
     }
     
-    public override void OnKeyPressed(EKeyboardKey key)
-    {
-        if (!BaseGameInterface.IsInTroop() && _textInputHandler.HandleKey(key))
-        {
-            if (_textInputHandler.Text.Length > BaseGameInterface.MAX_TROOP_LENGTH)
-                _textInputHandler.Text = _textInputHandler.Text[..BaseGameInterface.MAX_TROOP_LENGTH];
+    public override void OnKeyPressed(EKeyboardKey key) {
+        if (!BaseGameInterface.IsInTroop() && _textInputHandler.HandleKey(key)) {
+            if (_textInputHandler.Text.Length > BaseGameInterface.MaxTroopLength)
+                _textInputHandler.Text = _textInputHandler.Text[..BaseGameInterface.MaxTroopLength];
 
             Redraw();
             return;
         }
         
-        switch (key)
-        {
+        switch (key) {
             case EKeyboardKey.Option1:
                 BaseGameInterface.JoinTroopQueue();
                 Redraw();

@@ -4,13 +4,18 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
-    
-	<ItemGroup>
-		<PackageReference Include="BeatSaberModdingTools.Tasks" Version="1.3.2">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+
+    <Target Name="CopyToPlugins" AfterTargets="Build">
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginsPath)\ToniMacaroni's Mods" />
+        <Message Text="Copied to Plugins" Importance="high" />
+    </Target>
+
+    <PropertyGroup>
+        <GamePath>/home/decalfree/.local/share/Steam/steamapps/common/Gorilla Tag</GamePath>
+        <GameAssemblyPath>$(GamePath)\Gorilla Tag_Data\Managed</GameAssemblyPath>
+        <BepInExAssemblyPath>$(GamePath)\BepInEx\core</BepInExAssemblyPath>
+        <PluginsPath>$(GamePath)\BepInEx\plugins</PluginsPath>
+    </PropertyGroup>
 
 	<ItemGroup>
 		<Reference Include="0Harmony">
@@ -75,11 +80,5 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="Content\CIBundle" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		<StartAction>Program</StartAction>
-		<StartProgram>Y:\Program Files %28x86%29\Steam\steam.exe</StartProgram>
-		<StartArguments>-applaunch 1533390 -vrmode oculus --verbose fpfc</StartArguments>
-	</PropertyGroup>
 
 </Project>

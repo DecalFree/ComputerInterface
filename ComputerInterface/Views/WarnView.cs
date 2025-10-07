@@ -1,91 +1,56 @@
 ﻿using ComputerInterface.Extensions;
-using ComputerInterface.ViewLib;
 using System.Text;
+using ComputerInterface.Enumerations;
+using ComputerInterface.Models;
 
-namespace ComputerInterface.Views
-{
-    internal class WarnView : ComputerView
-    {
-        internal static IWarning _currentWarn;
+namespace ComputerInterface.Views;
 
-        public override void OnShow(object[] args)
-        {
-            base.OnShow(args);
+internal class WarnView : ComputerView {
+    private static IWarning _currentWarn;
 
-            _currentWarn = (IWarning)args[0]; // No way I'm actually using these arguments
-            Redraw();
-        }
+    public override void OnShow(object[] args) {
+        base.OnShow(args);
 
-        public void Redraw()
-        {
-            StringBuilder str = new();
-            str.BeginColor("ffffff50").Append("== ").EndColor();
-            str.Append("Warning").BeginColor("ffffff50").Append(" ==").EndColor().AppendLines(2);
+        _currentWarn = (IWarning)args[0]; // No way I'm actually using these arguments
+        Redraw();
+    }
 
-            str.AppendLine(_currentWarn.WarningMessage);
+    private void Redraw() {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.BeginColor("ffffff50").Append("== ").EndColor();
+        stringBuilder.Append("Warning").BeginColor("ffffff50").Append(" ==").EndColor().AppendLines(2);
 
-            Text = str.ToString();
-        }
+        stringBuilder.AppendLine(_currentWarn.WarningMessage);
 
-        public override void OnKeyPressed(EKeyboardKey key)
-        {
-            if (key == EKeyboardKey.Back)
-            {
-                ReturnToMainMenu();
-            }
-        }
+        Text = stringBuilder.ToString();
+    }
 
-        internal interface IWarning
-        {
-            string WarningMessage { get; }
-        }
+    public override void OnKeyPressed(EKeyboardKey key) {
+        if (key == EKeyboardKey.Back)
+            ReturnToMainMenu();
+    }
 
-        public class GeneralWarning : IWarning
-        {
-            private readonly string message;
+    private interface IWarning {
+        string WarningMessage { get; }
+    }
 
-            public GeneralWarning(string message)
-            {
-                this.message = message;
-            }
+    public class GeneralWarning(string message) : IWarning {
+        public string WarningMessage => message;
+    }
 
-            public string WarningMessage => message;
-        }
+    public class OutdatedWarning : IWarning {
+        public string WarningMessage => "You aren't on the latest version of Gorilla Tag, please update your game to continue playing with others.";
+    }
 
-        public class OutdatedWarning : IWarning
-        {
-            public string WarningMessage => "You aren't on the latest version of Gorilla Tag, please update your game to continue playing with others.";
-        }
+    public class NoInternetWarning : IWarning {
+        public string WarningMessage => "You aren't connected to an internet connection, please connect to a valid connection to continue playing with others.";
+    }
 
-        public class NoInternetWarning : IWarning
-        {
-            public string WarningMessage => "You aren't connected to an internet connection, please connect to a valid connection to continue playing with others.";
-        }
+    public class TemporaryBanWarning(string reason, int hoursRemaining) : IWarning {
+        public string WarningMessage => $"You have been temporarily banned. You will not be able to play with others until the ban expires.\nReason: {reason}\nHours remaining: {hoursRemaining}";
+    }
 
-        public class TemporaryBanWarning : IWarning
-        {
-            private readonly string reason;
-            private readonly int hoursRemaining;
-
-            public TemporaryBanWarning(string reason, int hoursRemaining)
-            {
-                this.reason = reason;
-                this.hoursRemaining = hoursRemaining;
-            }
-
-            public string WarningMessage => $"You have been temporarily banned. You will not be able to play with others until the ban expires.\nReason: {reason}\nHours remaining: {hoursRemaining}";
-        }
-
-        public class PermanentBanWarning : IWarning
-        {
-            private readonly string reason;
-
-            public PermanentBanWarning(string reason)
-            {
-                this.reason = reason;
-            }
-
-            public string WarningMessage => $"You have been permanently banned.\nReason: {reason}";
-        }
+    public class PermanentBanWarning(string reason) : IWarning {
+        public string WarningMessage => $"You have been permanently banned.\nReason: {reason}";
     }
 }
