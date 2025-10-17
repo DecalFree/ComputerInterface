@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
     <Target Name="CopyToPlugins" AfterTargets="Build">
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginsPath)\ToniMacaroni's Mods" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginsPath)\ToniMacaroni's Mods\ComputerInterface" />
         <Message Text="Copied to Plugins" Importance="high" />
     </Target>
 
