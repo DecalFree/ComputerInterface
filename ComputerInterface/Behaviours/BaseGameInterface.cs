@@ -343,7 +343,7 @@ public static class BaseGameInterface {
     }
 
     public static string[] GetGroupJoinMaps() =>
-        CheckForComputer(out var computer) ? computer.allowedMapsToJoin : [];
+        CheckForComputer(out var computer) ? computer._allowedMapsToJoin : [];
 
     #endregion
 
