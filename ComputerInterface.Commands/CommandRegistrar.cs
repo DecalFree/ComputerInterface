@@ -1,5 +1,4 @@
-﻿using System;
-using ComputerInterface.Behaviours;
+﻿using ComputerInterface.Behaviours;
 using ComputerInterface.Enumerations;
 using ComputerInterface.Interfaces;
 using ComputerInterface.Models;
