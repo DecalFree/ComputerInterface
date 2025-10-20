@@ -109,7 +109,7 @@ public class CustomComputer : MonoBehaviour {
             
             var latestVersionRaw = (await response.Content.ReadAsStringAsync()).Trim();
             if (Version.TryParse(latestVersionRaw, out var latestVersion)) {
-                Logging.Info($"Using version {Constants.Version} | Latest: {latestVersion}");
+                Logging.Info($"Using version {Plugin.Info.Metadata.Version} | Latest: {latestVersion}");
                 
                 if (latestVersion > Plugin.Info.Metadata.Version)
                     _computerViewController.SetView(_warningView, [ new WarnView.GeneralWarning($"Computer Interface version {latestVersion} is now available.\nIt is recommended to update to avoid any issues.") ]);
