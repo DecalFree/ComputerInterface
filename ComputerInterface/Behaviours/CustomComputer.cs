@@ -106,10 +106,14 @@ public class CustomComputer : MonoBehaviour {
             
             using var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
-            var latestVersion = (await response.Content.ReadAsStringAsync()).Trim();
-
-            if (!string.Equals(Constants.Version, latestVersion, StringComparison.OrdinalIgnoreCase))
-                _computerViewController.SetView(_warningView, [ new WarnView.GeneralWarning("A new version of Computer Interface is available.\nIt is recommended to update to avoid any issues.") ]);
+            
+            var latestVersionRaw = (await response.Content.ReadAsStringAsync()).Trim();
+            if (Version.TryParse(latestVersionRaw, out var latestVersion)) {
+                Logging.Info($"Using version {Constants.Version} | Latest: {latestVersion}");
+                
+                if (latestVersion > Plugin.Info.Metadata.Version)
+                    _computerViewController.SetView(_warningView, [ new WarnView.GeneralWarning($"Computer Interface version {latestVersion} is now available.\nIt is recommended to update to avoid any issues.") ]);
+            }
         }
         catch (Exception exception) {
             Logging.Error($"Computer Interface failed to check the its version: {exception}");

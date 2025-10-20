@@ -12,11 +12,13 @@ namespace ComputerInterface;
 [BepInPlugin(Constants.Guid, Constants.Name, Constants.Version)]
 public class Plugin : BaseUnityPlugin {
     internal new static ManualLogSource Logger;
+    internal new static PluginInfo Info;
     
     internal static CIConfig CIConfig;
     
     private void Awake() {
         Logger = base.Logger;
+        Info = base.Info;
         
         GorillaTagger.OnPlayerSpawned(delegate {
             try {
