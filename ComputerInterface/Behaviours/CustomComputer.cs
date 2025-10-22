@@ -26,13 +26,14 @@ public class CustomComputer : MonoBehaviour {
 
     private GorillaComputer _gorillaComputer;
     private ComputerViewController _computerViewController;
+    private MonitorController _monitorController;
 
     private readonly Dictionary<Type, IComputerView> _cachedViews = new();
         
     private MainMenuView _mainMenuView;
     private WarnView _warningView;
 
-    private readonly List<CustomScreenInfo> _customScreenInfos = new();
+    private readonly List<CustomScreenInfo> _customScreenInfos = [];
 
     private List<CustomKeyboardKey> _keys;
 
@@ -47,7 +48,7 @@ public class CustomComputer : MonoBehaviour {
 
     private readonly HttpClient _httpClient = new();
         
-    void Awake() {
+    private void Awake() {
         enabled = false;
         Initialize();
     }
@@ -83,10 +84,12 @@ public class CustomComputer : MonoBehaviour {
 
         _computerViewController = new ComputerViewController();
         _computerViewController.OnTextChanged += SetText;
+        _computerViewController.OnMonitorChanged += SetMonitor;
         _computerViewController.OnSwitchView += SwitchView;
         _computerViewController.OnSetBackground += SetBGImage;
+        _monitorController = new MonitorController();
         Logging.Info($"Found {SceneManager.GetActiveScene().GetComponentsInHierarchy<GorillaComputerTerminal>().Count} Computers in GorillaTag scene.");
-        PrepareMonitor(SceneManager.GetActiveScene(), SceneManager.GetActiveScene().GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath());
+        PrepareMonitor(SceneManager.GetActiveScene(), SceneManager.GetActiveScene().GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath(), true);
 
         _clickSound = await AssetLoader.LoadAsset<AudioClip>("ClickSound");
 
@@ -94,6 +97,7 @@ public class CustomComputer : MonoBehaviour {
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         try {
+            SetMonitor(_monitorController.GetCurrentMonitor());
             BaseGameInterface.InitAll();
             ShowInitialView(_mainMenuView, computerModEntries);
         }
@@ -166,21 +170,21 @@ public class CustomComputer : MonoBehaviour {
 
             if (loadMode == LoadSceneMode.Additive) {
                 if (sceneName == "Cave")
-                    PrepareMonitor(scene, "Cave_Main_Prefab/OldCave/MinesComputer/GorillaComputerObject/ComputerUI");
+                    PrepareMonitor(scene, "Cave_Main_Prefab/OldCave/MinesComputer/GorillaComputerObject/ComputerUI", true);
                     
                 switch (ZoneManagement.instance.activeZones.First()) {
                     case GTZone.monkeBlocks:
-                        PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/MonkeBlocksRoomPersistent/MonkeBlocksComputer/GorillaComputerObject/ComputerUI");
+                        PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/MonkeBlocksRoomPersistent/MonkeBlocksComputer/GorillaComputerObject/ComputerUI", true);
                         break;
                     case GTZone.monkeBlocksShared:
-                        PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/LocalObjects_Prefab/SharedBlocksMapSelectLobby/GorillaComputerObject/ComputerUI");
+                        PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/LocalObjects_Prefab/SharedBlocksMapSelectLobby/GorillaComputerObject/ComputerUI", true);
                         break;
                     default:
-                        PrepareMonitor(scene, scene.GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath());
+                        PrepareMonitor(scene, scene.GetComponentInHierarchy<GorillaComputerTerminal>().gameObject.transform.GetChild(0).GetPath(), true);
                         break;
                 }
             }
-        } 
+        }
         catch (Exception exception) {
             Logging.Warning($"Computer Interface couldn't find a computer to replace: {exception}");
         }
@@ -268,12 +272,13 @@ public class CustomComputer : MonoBehaviour {
         return newView;
     }
 
-    private async void PrepareMonitor(Scene scene, string computerPath) {
-        scene.TryFindByPath(computerPath, out Transform computer);
+    internal async void PrepareMonitor(Scene scene, string computerPath, bool replaceKeys) {
+        scene.TryFindByPath(computerPath, out var computer);
         var physicalComputer = computer.gameObject;
 
         try {
-            ReplaceKeys(physicalComputer);
+            if (replaceKeys)
+                ReplaceKeys(physicalComputer);
 
             var customScreenInfo = await CreateMonitor(physicalComputer, scene.name);
             customScreenInfo.Text = _computerViewController.CurrentComputerView != null ? _computerViewController.CurrentComputerView.Text : "Loading";
@@ -285,6 +290,11 @@ public class CustomComputer : MonoBehaviour {
         catch (Exception exception) {
             Logging.Error($"Computer Interface failed to prepare the monitor: {exception}");
         }
+    }
+
+    public void SetMonitor(IMonitor monitor) {
+        ComputerView.ScreenWidth = (int)_monitorController.GetComputerScreenDimensions(monitor).x;
+        ComputerView.ScreenHeight = (int)_monitorController.GetComputerScreenDimensions(monitor).y;
     }
 
     private void ReplaceKeys(GameObject computer) {
@@ -414,12 +424,12 @@ public class CustomComputer : MonoBehaviour {
     }
 
     private async Task<CustomScreenInfo> CreateMonitor(GameObject physicalComputer, string sceneName) {
-        var monitorAsset = await AssetLoader.LoadAsset<GameObject>("Classic Monitor");
+        var monitorAsset = await AssetLoader.LoadAsset<GameObject>(_monitorController.GetCurrentMonitor().AssetName);
         var newMonitor = Instantiate(monitorAsset, physicalComputer.transform.Find("monitor") ?? physicalComputer.transform.Find("monitor (1)"), false);
 
         newMonitor.name = $"Computer Interface (Scene - {sceneName})";
-        newMonitor.transform.localPosition = new Vector3(-0.0787f, -0.12f, 0.5344f);
-        newMonitor.transform.localEulerAngles = Vector3.right * 90f;
+        newMonitor.transform.localPosition = _monitorController.GetCurrentMonitor().LocalPosition;
+        newMonitor.transform.localEulerAngles = _monitorController.GetCurrentMonitor().LocalEulerAngles;
         newMonitor.transform.SetParent(physicalComputer.transform.parent, true);
         newMonitor.transform.Find("Main Monitor").gameObject.AddComponent<GorillaSurfaceOverride>();
 

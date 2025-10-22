@@ -8,6 +8,7 @@ namespace ComputerInterface.Behaviours;
 
 internal class ComputerViewController {
     public event Action<string> OnTextChanged;
+    public event Action<IMonitor> OnMonitorChanged;
     public event Action<ComputerViewSwitchEventArgs> OnSwitchView;
     public event Action<ComputerViewChangeBackgroundEventArgs> OnSetBackground;
 
@@ -18,6 +19,11 @@ internal class ComputerViewController {
     public ComputerViewController() {
         _propUpdateBinder = new PropUpdateBinder();
         _propUpdateBinder.Bind("Text", RaiseOnTextChanged);
+    }
+
+    public void SetMonitor(IMonitor monitor) {
+        OnMonitorChanged?.Invoke(monitor);
+        SetView(CurrentComputerView, null);
     }
 
     public void SetView(IComputerView computerView, object[] args) {
