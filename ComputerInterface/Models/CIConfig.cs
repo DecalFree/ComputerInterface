@@ -21,7 +21,7 @@ internal class CIConfig {
     public CIConfig(ConfigFile config) {
         ScreenBackgroundColor = config.Bind("Appearance", "ScreenBackgroundColor", new Color(0.05f, 0.05f, 0.05f), "The background colour of the monitor screen");
         ScreenBackgroundPath = config.Bind("Appearance", "ScreenBackgroundPath", "BepInEx/plugins/ComputerInterface/background.png", "The background image of the monitor screen");
-        CurrentMonitorType = config.Bind("Appearance", "Monitor Type", EMonitorType.Modern, "The monitor to use in-game.");
+        CurrentMonitorType = config.Bind("Appearance", "Monitor Type", EMonitorType.Classic, "The monitor to use in-game.");
         _disabledMods = config.Bind("Data", "DisabledMods", "", "The list of mods disabled by the ComputerInterface mod");
 
         BackgroundTexture = GetTexture(ScreenBackgroundPath.Value);

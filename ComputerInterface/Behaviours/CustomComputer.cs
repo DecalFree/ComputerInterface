@@ -61,6 +61,7 @@ public class CustomComputer : MonoBehaviour {
 
         List<IComputerModEntry> computerModEntries = [
             new GameSettingsEntry(),
+            new ComputerSettingsEntry(),
             new CommandLineEntry(),
             new DetailsEntry(),
             new ModListEntry()
@@ -166,12 +167,10 @@ public class CustomComputer : MonoBehaviour {
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode) {
         try  {
-            var sceneName = scene.name;
-
             if (loadMode == LoadSceneMode.Additive) {
-                if (sceneName == "Cave")
+                if (scene.name == "Cave")
                     PrepareMonitor(scene, "Cave_Main_Prefab/OldCave/MinesComputer/GorillaComputerObject/ComputerUI", true);
-                    
+                
                 switch (ZoneManagement.instance.activeZones.First()) {
                     case GTZone.monkeBlocks:
                         PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), "Environment Objects/MonkeBlocksRoomPersistent/MonkeBlocksComputer/GorillaComputerObject/ComputerUI", true);
@@ -295,6 +294,15 @@ public class CustomComputer : MonoBehaviour {
     public void SetMonitor(IMonitor monitor) {
         ComputerView.ScreenWidth = (int)_monitorController.GetComputerScreenDimensions(monitor).x;
         ComputerView.ScreenHeight = (int)_monitorController.GetComputerScreenDimensions(monitor).y;
+        
+        foreach (var gorillaComputerTerminal in SceneManager.GetSceneByName("GorillaTag").GetComponentsInHierarchy<GorillaComputerTerminal>()) {
+            if (!gorillaComputerTerminal.transform.Find("Computer Interface (Scene - GorillaTag)"))
+                return;
+            
+            var customMonitor = gorillaComputerTerminal.transform.GetChild(1);
+            if (customMonitor.transform.GetChild(0).name != $"{_monitorController.GetCurrentMonitor().MonitorType} Monitor Prefab")
+                PrepareMonitor(SceneManager.GetSceneByName("GorillaTag"), gorillaComputerTerminal.transform.GetChild(0).GetPath(), false);
+        }
     }
 
     private void ReplaceKeys(GameObject computer) {
@@ -427,26 +435,30 @@ public class CustomComputer : MonoBehaviour {
         var monitorAsset = await AssetLoader.LoadAsset<GameObject>(_monitorController.GetCurrentMonitor().AssetName);
         var newMonitor = Instantiate(monitorAsset, physicalComputer.transform.Find("monitor") ?? physicalComputer.transform.Find("monitor (1)"), false);
 
+        var oldMonitor = physicalComputer.transform.parent.Find($"Computer Interface (Scene - {sceneName})");
+        if (oldMonitor)
+            Destroy(oldMonitor.gameObject);
+        
         newMonitor.name = $"Computer Interface (Scene - {sceneName})";
         newMonitor.transform.localPosition = _monitorController.GetCurrentMonitor().LocalPosition;
         newMonitor.transform.localEulerAngles = _monitorController.GetCurrentMonitor().LocalEulerAngles;
         newMonitor.transform.SetParent(physicalComputer.transform.parent, true);
-        newMonitor.transform.Find("Main Monitor").gameObject.AddComponent<GorillaSurfaceOverride>();
+        newMonitor.transform.Find($"{_monitorController.GetCurrentMonitor().MonitorType} Monitor Prefab").gameObject.AddComponent<GorillaSurfaceOverride>();
 
         CustomScreenInfo info = new() {
             SceneName = sceneName,
             Transform = newMonitor.transform,
             TextMeshProUgui = newMonitor.transform.Find("Canvas/Text (TMP)").GetComponent<TextMeshProUGUI>(),
-            Renderer = newMonitor.transform.Find("Main Monitor").GetComponent<Renderer>(),
+            Renderer = newMonitor.transform.Find($"{_monitorController.GetCurrentMonitor().MonitorType} Monitor Prefab").GetComponent<Renderer>(),
             Background = newMonitor.transform.Find("Canvas/RawImage").GetComponent<RawImage>(),
             Color = new Color(0.05f, 0.05f, 0.05f)
         };
 
-        RemoveMonitor(physicalComputer, sceneName);
+        RemoveMonitor(physicalComputer);
         return info;
     }
 
-    private void RemoveMonitor(GameObject computer, string sceneName) {
+    private void RemoveMonitor(GameObject computer) {
         GameObject monitor = null;
         
         foreach (Transform child in computer.transform) {

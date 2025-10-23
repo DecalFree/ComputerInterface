@@ -78,7 +78,7 @@ public class MainMenuView : ComputerView {
         stringBuilder.BeginCenter().MakeBar('-', ScreenWidth, 0, "ffffff10");
         stringBuilder.AppendClr(Constants.Name, PrimaryColor).EndColor().Append(" - v").Append(Constants.Version).AppendLine();
 
-        stringBuilder.Append("Computer Interface created by ").AppendClr("Toni Macaroni", "9be68a").AppendLine();
+        stringBuilder.Append("Computer Interface by ").AppendClr("Toni Macaroni", "9be68a").AppendLine();
 
         stringBuilder.MakeBar('-', ScreenWidth, 0, "ffffff10").EndAlign().AppendLine();
     }

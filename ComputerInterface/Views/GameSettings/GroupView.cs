@@ -36,9 +36,9 @@ internal class GroupView : ComputerView {
     }
 
     private void DrawHeader(StringBuilder stringBuilder) {
-        stringBuilder.BeginCenter().BeginColor("ffffff50").Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.Append("Press enter to join").AppendLine();
-        stringBuilder.Append("Option 1 for more info").AppendLine();
+        stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.BeginColor("ffffff50").Append("Press enter to join").AppendLine();
+        stringBuilder.Append("Option 1 for more info").AppendLine().EndColor();
         stringBuilder.Repeat("=", ScreenWidth).EndColor().EndAlign().AppendLines(2);
     }
 

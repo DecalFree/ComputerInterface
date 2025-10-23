@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using ComputerInterface.Enumerations;
+using UnityEngine;
 
 namespace ComputerInterface.Interfaces;
 
 public interface IMonitor {
+    EMonitorType  MonitorType { get; }
+    
     string AssetName { get; }
     
     int ScreenWidth { get; }

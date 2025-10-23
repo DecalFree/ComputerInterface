@@ -1,9 +1,12 @@
-﻿using ComputerInterface.Interfaces;
+﻿using ComputerInterface.Enumerations;
+using ComputerInterface.Interfaces;
 using UnityEngine;
 
 namespace ComputerInterface.Models.Monitor;
 
 public class ModernMonitor : IMonitor {
+    public EMonitorType MonitorType => EMonitorType.Modern;
+    
     public string AssetName => "Modern Monitor";
     
     public int ScreenWidth => 41;
