@@ -5,5 +5,5 @@ public static class Constants {
     
     public const string Name = "Computer Interface";
     
-    public const string Version = "1.9.2";
+    public const string Version = "1.9.3";
 }
