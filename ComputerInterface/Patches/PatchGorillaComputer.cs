@@ -2,7 +2,6 @@
 using GorillaNetworking;
 using HarmonyLib;
 using System;
-using UnityEngine;
 
 namespace ComputerInterface.Patches;
 
@@ -18,12 +17,5 @@ internal static class PatchGorillaComputer {
         
         if (__instance.GetField<object>("exactOneWeek") == null)
             __instance.SetField("exactOneWeek", __instance.exactOneWeekFile.text.Split(Environment.NewLine));
-    }
-    
-    [HarmonyPatch("InitializeGameMode"), HarmonyPrefix]
-    public static bool InitializeGameModePrefix(GorillaComputer __instance) {
-        __instance.leftHanded = PlayerPrefs.GetInt("leftHanded", 0) == 1;
-        __instance.OnModeSelectButtonPress(PlayerPrefs.GetString("currentGameMode", "INFECTION"), __instance.leftHanded);
-        return false;
     }
 }
