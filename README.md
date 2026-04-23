@@ -1,4 +1,4 @@
-## This project has been archived due to AA hating on ComputerInterface and combining the shiity in-game monitor with other meshes. Fuck you AA.
+## This project has been archived due to AA hating on ComputerInterface and combining the shitty in-game monitor with other meshes. Fuck you AA.
 
 # Computer Interface
 
