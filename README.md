@@ -16,7 +16,7 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 ## Table of Contents
 
 - [Install](#install)
-- [Command Line](#commandline)
+- [Command Line](#command-line)
 - [Background](#background)
 - [Additional Features](#additional-features)
 - [For Developers](#for-developers)
