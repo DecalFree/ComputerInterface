@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -13,8 +14,8 @@ internal static class AssetLoader {
         if (_assetBundleInitialized)
             return Task.FromResult(_storedAssetBundle);
 
-        var stream = typeof(Plugin).Assembly.GetManifestResourceStream("ComputerInterface.Content.CIBundle");
-        var newAssetBundle = AssetBundle.LoadFromStream(stream);
+        Stream stream = typeof(Plugin).Assembly.GetManifestResourceStream("ComputerInterface.Content.CIBundle");
+        AssetBundle newAssetBundle = AssetBundle.LoadFromStream(stream);
         stream?.Close();
 
         _storedAssetBundle = newAssetBundle;
@@ -25,14 +26,14 @@ internal static class AssetLoader {
     public static async Task<T> LoadAsset<T>(string assetName) where T : Object {
         if (!_assetBundleInitialized)
             await LoadAssetBundle();
-        
-        if (_loadedAssetsCache != null && _loadedAssetsCache.TryGetValue(assetName, out var loadedAsset))
+
+        if (_loadedAssetsCache != null && _loadedAssetsCache.TryGetValue(assetName, out Object loadedAsset))
             return (T)loadedAsset;
-        
+
         Logging.Info($"Loading asset: {assetName}");
         _loadedAssetsCache ??= [];
-        
-        var newlyLoadedAsset = _storedAssetBundle.LoadAsset<T>(assetName);
+
+        T newlyLoadedAsset = _storedAssetBundle.LoadAsset<T>(assetName);
 
         _loadedAssetsCache.Add(assetName, newlyLoadedAsset);
         return newlyLoadedAsset;

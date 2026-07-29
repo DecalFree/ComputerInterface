@@ -1,91 +1,84 @@
-﻿using ComputerInterface.Extensions;
-using GorillaNetworking;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
-using ComputerInterface.Behaviours;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
+using GorillaNetworking;
+using UnityEngine.PlayerLoop;
 
 namespace ComputerInterface.Views.GameSettings;
 
-public class RedemptionView : ComputerView {
+internal class RedemptionView : ComputerView {
     private readonly UITextInputHandler _textInputHandler = new();
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
+    public override void OnViewShown(object[] arguments) => _textInputHandler.Text = string.Empty;
 
-        _textInputHandler.Text = string.Empty;
-        Redraw();
-    }
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
+        stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.Append("Redemption Tab").AppendLine();
 
-        stringBuilder.Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.BeginCenter().Append("Redeem Tab").AppendLine();
-
-        var showState = _textInputHandler.Text != string.Empty;
-
-        if (showState) {
-            switch (BaseGameInterface.GetRedemptionStatus()) {
-                case GorillaComputer.RedemptionResult.Invalid:
-                    stringBuilder.AppendClr("Invalid Code", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case GorillaComputer.RedemptionResult.Checking:
-                    stringBuilder.AppendClr("Validating Code", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case GorillaComputer.RedemptionResult.AlreadyUsed:
-                    stringBuilder.AppendClr("Code Already Claimed", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case GorillaComputer.RedemptionResult.Success:
-                    stringBuilder.AppendClr("Successfully Claimed Code", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case GorillaComputer.RedemptionResult.Empty:
-                    showState = false;
-                    break;
-            }
+        switch (GameInterfaceService.RedemptionStatus) {
+            case GorillaComputer.RedemptionResult.Invalid:
+                stringBuilder.AppendClr("Invalid Code", "ffffff50").AppendLine();
+                break;
+            case GorillaComputer.RedemptionResult.Checking:
+                stringBuilder.AppendClr("Validating Code", "ffffff50").AppendLine();
+                break;
+            case GorillaComputer.RedemptionResult.AlreadyUsed:
+                stringBuilder.AppendClr("Code Already Claimed", "ffffff50").AppendLine();
+                break;
+            case GorillaComputer.RedemptionResult.Success:
+                stringBuilder.AppendClr("Successfully Claimed Code", "ffffff50").AppendLine();
+                break;
+            case GorillaComputer.RedemptionResult.Empty:
+                stringBuilder.AppendClr("Ready - Enter to Redeem", "ffffff50").AppendLine();
+                break;
         }
 
-        stringBuilder.Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.AppendLine().EndAlign();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLine();
 
-        stringBuilder.BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
-        stringBuilder.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append("Press Enter to redeem code.");
+        stringBuilder.AppendLines(1).BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
 
-        Text = stringBuilder.ToString();
+        stringBuilder.AppendLines(6).AppendClr("* Press Enter to redeem code.", "ffffff50").AppendLine();
+
+        return stringBuilder.ToString();
     }
 
-    public override async void OnKeyPressed(EKeyboardKey key) {
-        if (_textInputHandler.HandleKey(key)) {
-            if (_textInputHandler.Text.Length > BaseGameInterface.MaxCodeLength)
-                _textInputHandler.Text = _textInputHandler.Text[..BaseGameInterface.MaxCodeLength];
-
-            Redraw();
-            return;
-        }
-
-        switch (key) {
-            case EKeyboardKey.Enter:
+    public override async void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Enter:
                 if (_textInputHandler.Text != "") {
-                    if (_textInputHandler.Text.Length < 8) {
-                        BaseGameInterface.SetRedemptionStatus(GorillaComputer.RedemptionResult.Invalid);
+                    if (_textInputHandler.Text.Length < Constants.MaxRedemptionCodeLength) {
+                        GameInterfaceService.RedemptionStatus = GorillaComputer.RedemptionResult.Invalid;
                         return;
                     }
                     CodeRedemption.Instance.HandleCodeRedemption(_textInputHandler.Text);
-                    BaseGameInterface.SetRedemptionStatus(GorillaComputer.RedemptionResult.Checking);
+                    GameInterfaceService.RedemptionStatus = GorillaComputer.RedemptionResult.Checking;
                 }
-                else if (BaseGameInterface.GetRedemptionStatus() != GorillaComputer.RedemptionResult.Success) {
-                    BaseGameInterface.SetRedemptionStatus(GorillaComputer.RedemptionResult.Empty);
+                else if (GameInterfaceService.RedemptionStatus != GorillaComputer.RedemptionResult.Success) {
+                    GameInterfaceService.RedemptionStatus = GorillaComputer.RedemptionResult.Empty;
                 }
-                Redraw();
-                await Task.Delay(600); // Wait 0.6 seconds for the computer to fully register the code inputted and show the correct state.
-                Redraw();
+
+                UpdateViewScreen();
+                await Task.Delay(600); // Wait 0.6 seconds for the computer to fully register the code inputted and show the correct state. -DecalFree
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Back:
+            case EKeyboardButton.Back:
                 _textInputHandler.Text = string.Empty;
-                BaseGameInterface.SetRedemptionStatus(GorillaComputer.RedemptionResult.Empty);
+                GameInterfaceService.RedemptionStatus = GorillaComputer.RedemptionResult.Empty;
                 ShowView<GameSettingsView>();
+                break;
+            default:
+                if (_textInputHandler.HandleButtonPress(pressedButton)) {
+                    if (_textInputHandler.Text.Length > Constants.MaxRedemptionCodeLength)
+                        _textInputHandler.Text = _textInputHandler.Text[..Constants.MaxRedemptionCodeLength];
+
+                    UpdateViewScreen();
+                }
                 break;
         }
     }

@@ -1,70 +1,64 @@
 ﻿using System;
-using ComputerInterface.Extensions;
-using ComputerInterface.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ComputerInterface.Behaviours;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
-using ComputerInterface.Queues;
 
 namespace ComputerInterface.Views.GameSettings;
 
 internal class QueueView : ComputerView {
-    private readonly List<IQueueInfo> _queues = [
-        new DefaultQueue(),
-        new CompetitiveQueue(),
-        new MinigamesQueue()
+    private static readonly List<Tuple<string, string, string>> Queues = [
+        new("Default", "DEFAULT", "Default is for anyone to play normally."),
+        new("Competitive", "COMPETITIVE", "Competitive is for players who want to play the game, while trying as hard as they can."),
+        new("Minigames", "MINIGAMES", "Minigames is for people looking to play with their own set of rules.")
     ];
-    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down);
 
-    public QueueView() {
-        _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
-        _selectionHandler.MaxIdx = _queues.Count;
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down) {
+        MaxIndex = Queues.Count
+    };
+
+    public QueueView() => _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
+
+    public override void OnViewShown(object[] arguments) {
+        string prefsQueue = GameInterfaceService.Queue;
+
+        Tuple<string, string, string> queue = Queues.FirstOrDefault(q => string.Equals(q.Item1, prefsQueue, StringComparison.CurrentCultureIgnoreCase)) ?? Queues.FirstOrDefault(q => q.Item1 == "Default");
+
+        _selectionHandler.CurrentSelectionIndex = Queues.IndexOf(queue);
+        if (!GameInterfaceService.IsInTroop)
+            GameInterfaceService.Queue = Queues[_selectionHandler.CurrentSelectionIndex].Item2;
     }
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-
-        var prefsQueue = BaseGameInterface.GetQueue();
-
-        var queue = _queues.FirstOrDefault(q => string.Equals(q.DisplayName, prefsQueue, StringComparison.CurrentCultureIgnoreCase)) ?? _queues.FirstOrDefault(q => q.DisplayName == "Default");
-
-        _selectionHandler.CurrentSelectionIndex = _queues.IndexOf(queue);
-        if (!BaseGameInterface.IsInTroop())
-            BaseGameInterface.SetQueue(_queues[_selectionHandler.CurrentSelectionIndex]);
-
-        Redraw();
-    }
-
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
         stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
         stringBuilder.Append("Queue Tab").AppendLine();
         stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
 
-        for (var i = 0; i < _queues.Count; i++) {
-            stringBuilder.Append(_selectionHandler.GetIndicatedText(i, _queues[i].DisplayName));
+        for (int i = 0; i < Queues.Count; i++) {
+            stringBuilder.Append(_selectionHandler.GetIndicatedText(i, Queues[i].Item1));
             stringBuilder.AppendLine();
         }
 
-        stringBuilder.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append(_queues[_selectionHandler.CurrentSelectionIndex].Description);
+        stringBuilder.AppendLines(3).AppendClr($"* {Queues[_selectionHandler.CurrentSelectionIndex].Item3}", "ffffff50").AppendLine();
 
-        SetText(stringBuilder);
+        return stringBuilder.ToString();
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        switch (key) {
-            case EKeyboardKey.Back:
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Back:
                 ShowView<GameSettingsView>();
                 break;
             default:
-                if (!BaseGameInterface.IsInTroop() && _selectionHandler.HandleKeypress(key)) {
-                    BaseGameInterface.SetQueue(_queues[_selectionHandler.CurrentSelectionIndex]);
-                    Redraw();
+                if (!GameInterfaceService.IsInTroop && _selectionHandler.HandleButtonPress(pressedButton)) {
+                    GameInterfaceService.Queue = Queues[_selectionHandler.CurrentSelectionIndex].Item2;
+                    UpdateViewScreen();
                 }
                 break;
         }

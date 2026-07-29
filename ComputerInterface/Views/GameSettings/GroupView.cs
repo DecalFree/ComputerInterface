@@ -1,70 +1,55 @@
-using ComputerInterface.Extensions;
-using System.Text;
-using ComputerInterface.Behaviours;
+﻿using System.Text;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
 
 namespace ComputerInterface.Views.GameSettings;
 
 internal class GroupView : ComputerView {
-    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down);
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down) {
+        MaxIndex = GameInterfaceService.AllowedMapsToJoin.Length - 1,
+        CurrentSelectionIndex = 0
+    };
 
-    public GroupView() =>
-        _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
+    public GroupView() => _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
-        _selectionHandler.MaxIdx = BaseGameInterface.GetGroupJoinMaps().Length - 1;
-        _selectionHandler.CurrentSelectionIndex = 0;
-        Redraw();
-    }
-
-    private void Join() {
-        BaseGameInterface.JoinGroupMap(_selectionHandler.CurrentSelectionIndex);
-        ShowView<RoomView>();
-    }
-
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
-
-        DrawHeader(stringBuilder);
-        DrawOptions(stringBuilder);
-
-        SetText(stringBuilder);
-    }
-
-    private void DrawHeader(StringBuilder stringBuilder) {
         stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.BeginColor("ffffff50").Append("Press enter to join").AppendLine();
-        stringBuilder.Append("Option 1 for more info").AppendLine().EndColor();
-        stringBuilder.Repeat("=", ScreenWidth).EndColor().EndAlign().AppendLines(2);
-    }
+        stringBuilder.Append("Group Tab").AppendLine();
+        stringBuilder.AppendClr("Option 1 for more info", "ffffff50").EndColor().AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
 
-    private void DrawOptions(StringBuilder stringBuilder) {
         stringBuilder.AppendLine("Available maps: ");
-        var maps = BaseGameInterface.GetGroupJoinMaps();
-        for (var i = 0; i < maps.Length; i++) {
-            var formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(maps[i]);
+        string[] maps = GameInterfaceService.AllowedMapsToJoin;
+        for (int i = 0; i < maps.Length; i++) {
+            string formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(maps[i]);
             stringBuilder.Append(_selectionHandler.GetIndicatedText(i, formattedName)).AppendLine();
         }
+
+        stringBuilder.AppendLines(1).AppendClr("* Press Enter to group join.", "ffffff50").AppendLine();
+
+        return stringBuilder.ToString();
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        switch (key) {
-            case EKeyboardKey.Enter:
-                Join();
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Enter:
+                GameInterfaceService.JoinGroupMap(_selectionHandler.CurrentSelectionIndex);
+                ShowView<SessionView>();
                 break;
-            case EKeyboardKey.Option1:
+            case EKeyboardButton.Option1:
                 ShowView<GroupInfoView>();
                 break;
-            case EKeyboardKey.Back:
+            case EKeyboardButton.Back:
                 ShowView<GameSettingsView>();
                 break;
             default:
-                if (_selectionHandler.HandleKeypress(key))
-                    Redraw();
+                if (_selectionHandler.HandleButtonPress(pressedButton))
+                    UpdateViewScreen();
                 break;
         }
     }

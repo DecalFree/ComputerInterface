@@ -1,131 +1,75 @@
-﻿using ComputerInterface.Interfaces;
-using ComputerInterface.Views;
-using JetBrains.Annotations;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using ComputerInterface.Behaviors;
 using ComputerInterface.Enumerations;
-using UnityEngine;
+using ComputerInterface.Views;
 
 namespace ComputerInterface.Models;
 
-public class ComputerView : IComputerView {
+public abstract class ComputerView {
+    public static event Action<string> OnTextUpdated;
+
     /// <summary>
-    /// How many characters fit in the x-axis of the screen
+    /// Amount of characters that fit in the x-axis of the screen.
     /// </summary>
     public static int ScreenWidth = 52;
 
     /// <summary>
-    /// How many characters fit in the y-axis of the screen
+    /// Amount of characters that fit in the y-axis of the screen.
     /// </summary>
     public static int ScreenHeight = 12;
 
     public string PrimaryColor = "ed6540";
 
     /// <summary>
-    /// Text that is shown on screen
-    /// assigning to it automatically updates the text
+    /// The text that is shown on the screen.
     /// </summary>
-    public string Text {
-        get => _text;
-        set => SetProperty(ref _text, value);
-    }
+    public string Text { get; private set; }
 
-    protected string _text;
-
-    public Type CallerViewType { get; set; }
+    public Type CallerComputerView { get; set; }
 
     /// <summary>
-    /// Set text from a <see cref="StringBuilder"/>
+    /// Gets called when a ComputerView is shown.
     /// </summary>
-    /// <param name="stringBuilder"></param>
-    public virtual void SetText(StringBuilder stringBuilder) =>
-        Text = stringBuilder.ToString();
-
-    /// <summary>
-    /// Set text from a <see cref="StringBuilder"/> the the callback is providing
-    /// </summary>
-    /// <param name="builderCallback"></param>
-    public virtual void SetText(Action<StringBuilder> builderCallback) {
-        StringBuilder stringBuilder = new();
-        builderCallback(stringBuilder);
-        SetText(stringBuilder);
+    public virtual void OnViewShown(object[] arguments) {
     }
 
     /// <summary>
-    /// Gets called when a key is pressed on the keyboard
+    /// Tells the computer what text should appear on the screen.
     /// </summary>
-    /// <param name="key"></param>
-    public virtual void OnKeyPressed(EKeyboardKey key) {
+    protected abstract string GetViewText();
+
+    /// <summary>
+    /// Gets called when a button is pressed on the keyboard.
+    /// </summary>
+    /// <param name="pressedButton">The pressed button on the keyboard.</param>
+    public virtual void OnButtonPressed(EKeyboardButton pressedButton) {
     }
 
     /// <summary>
-    /// Gets called when the roomView is shown
-    /// call the base OnShow when overriding
-    /// to display the current text on the computer
+    /// Switch to another ComputerView.
     /// </summary>
-    public virtual void OnShow(object[] args) =>
-        RaisePropertyChanged(nameof(Text));
+    public void ShowView<T>(params object[] arguments) => ShowView(typeof(T), arguments);
 
     /// <summary>
-    /// Switch to another roomView
+    /// Switch to another ComputerView.
     /// </summary>
-    public void ShowView<T>(params object[] args) =>
-        ShowView(typeof(T), args);
+    public void ShowView(Type computerView, params object[] arguments) => Main.Singleton.SwitchComputerView(GetType(), computerView, arguments);
 
     /// <summary>
-    /// Switch to another roomView
+    /// Return to the previous ComputerView.
     /// </summary>
-    public void ShowView(Type type, params object[] args) =>
-        OnViewSwitchRequest?.Invoke(new ComputerViewSwitchEventArgs(GetType(), type, args));
+    public void ReturnToPreviousView() => ShowView(CallerComputerView);
 
     /// <summary>
-    /// Return to previous roomView
+    /// Shows the MainMenu ComputerView.
     /// </summary>
-    public void ReturnView() =>
-        ShowView(CallerViewType);
+    public void ReturnToMainMenu() => ShowView<MainMenuView>();
 
     /// <summary>
-    /// Shows the main menu roomView
+    /// Update text on the computer's screen.
     /// </summary>
-    public void ReturnToMainMenu() =>
-        ShowView<MainMenuView>();
-
-    public void SetBackground(Texture texture, Color? color = null) {
-        ComputerViewChangeBackgroundEventArgs args = new(texture, color);
-        OnChangeBackgroundRequest?.Invoke(args);
+    public void UpdateViewScreen() {
+        Text = GetViewText();
+        OnTextUpdated?.Invoke(Text);
     }
-
-    public void RevertBackground() =>
-        OnChangeBackgroundRequest?.Invoke(null);
-
-    public async Task ShowSplashForDuration(Texture texture, int milliseconds) {
-        var text = Text;
-        Text = "";
-        SetBackground(texture);
-        await Task.Delay(milliseconds);
-        RevertBackground();
-        Text = text;
-    }
-
-    public event ComputerViewSwitchEventArgs.ComputerViewSwitchEventHandler OnViewSwitchRequest;
-    public event ComputerViewChangeBackgroundEventArgs.ComputerViewChangeBackgroundEventHandler OnChangeBackgroundRequest;
-
-    protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null) {
-        if (EqualityComparer<T>.Default.Equals(storage, value))
-            return false;
-
-        storage = value;
-        RaisePropertyChanged(propertyName);
-        return true;
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    [NotifyPropertyChangedInvocator]
-    protected void RaisePropertyChanged([CallerMemberName] string propertyName = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

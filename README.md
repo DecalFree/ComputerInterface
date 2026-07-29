@@ -16,7 +16,7 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 ## Table of Contents
 
 - [Install](#install)
-- [CommandLine](#commandline)
+- [Command Line](#commandline)
 - [Background](#background)
 - [Additional Features](#additional-features)
 - [For Developers](#for-developers)
@@ -24,10 +24,10 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 
 ## Install
 
-The recommended way to install Computer Interface is through [MonkeModManager](https://github.com/arielthemonke/MonkeModManager/releases/latest). Simply select Computer Interface from the menu, and hit "Install".
+The recommended way to install Computer Interface is through [MonkeModManager](https://github.com/NgbatzYT/MonkeModManager/releases/latest). Simply select Computer Interface from the menu, and hit "Install".
 This will ensure you have all the necessary things to use Computer Interface.
 
-## CommandLine
+## Command Line
 
 Computer Interface ships with a CLI that enables you to execute routines & change settings.
 
@@ -35,20 +35,12 @@ Information on creating commands can be found in the [Adding Your Own Commands](
 
 By default Computer Interface ships with the following commands:
 
-- **setcolor** ``int`` ``int`` ``int``  
-  Changes your gorilla's color (e.g. setcolor 255 255 255)
-- **setname** ``string``  
-  Changes your gorilla's name (e.g. setname toni)
-- **join** ``string``  
-  Connects to a room code (e.g. join dev123)
-- **leave**  
-  Disconnects you from the current room
 - **cam** ``string``  
-  Changes your spectator camera's perspective to either First Person (fp) or Third Person (tp)
+  Sets the users computer screen camera to either First Person (fp) or Third Person (tp).
 - **setbg** ``int`` ``int`` ``int``  
-  Changes your computer's background color (e.g. setbg 40 70 40)
-- **resetbg**  
-  Resets the computer's background.
+  Sets the background color of the computer's screen. (e.g. setbg 40 70 40)
+- **refreshbg**  
+  Refreshes the background of the computer's screen.
 
 ## Background
 
@@ -60,7 +52,8 @@ To use a custom background image:
   - Your background will be multiplied by the background's color
   - Paths can either be relative to your Gorilla Tag folder or absolute.
 
-As of Computer Interface version 1.9.0, using the `resetbg` makes it easier to change you background without the need to restart your game.  
+As of Computer Interface version 2.0.0, using the `refreshbg` makes it easier to change you background without the need to restart your game.
+
 You can also run ``setbg 255 255 255`` to leave the background with no modified color.
 
 ## Additional Features
@@ -81,49 +74,45 @@ For more advanced examples check out the base library views here:
 
 ### Adding Views
 
-Computer Interface works with "Views" which are classes that inherit from `ComputerView` or `IComputerView`.
+Computer Interface works with "Views" which are classes that inherit from `ComputerView`.
 
 Views can navigate to others views through `ShowView<TargetView>()`, or return to the main menu with `ReturnToMainMenu()`.  
-Views can check for key presses by overriding `OnKeyPressed`.
+Views can check for button presses by overriding `OnButtonPressed`.
 
 An example view may look like this:
 
 ```csharp
 public class ExampleView : ComputerView {
-    // Called when the view is opened by the user.
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-        
-        // A 'Redraw' method is usually made for easier reading.
-        Redraw();
-    }
-    
-    // The method that usually handles the text on the screen.
-    private void Redraw() {
-        // A StringBuilder is usually made for easy text making.
-        var stringBuilder = new StringBuilder();
-        
-        // Uses the top of the screen to showoff what tab you are currently on.
-        stringBuilder.BeginCenter().Repeat("=", SCREEN_WIDTH).AppendLine();
-        stringBuilder.Append("Example Tab").AppendLine();
-        stringBuilder.Repeat("=", SCREEN_WIDTH).EndAlign().AppendLines(2);
-        
-        // Makes text below the "titlebar".
-        stringBuilder.AppendLine("Computer Interface Example!");
-        
-        Text = stringBuilder.ToString();
+    // This function is completely optional now due to text for a ComputerView now automatically being updated when switching views.
+    // An example this can be used for is setting a UITextInputHandler's text to 'string.Empty' when the view is shown.
+    public override void OnViewShown(object[] arguments) {
     }
 
-    // When a key on the keyboard is pressed, the key pressed is sent back as a parameter to be used.
-    public override void OnKeyPressed(EKeyboardKey key) {
-        switch (key) {
-            case EKeyboardKey.Back:
-                // 'ReturnToMainMenu();' is used to return to the MainMenuView.
-                // 'ShowView<ViewToShow>();' can be used to switch to another view.
+    // This method is NEEDED as it handles the text that will be on the computer's screen.
+    protected override string GetViewText() {
+        // A StringBuilder is usually made for easy text making.
+        StringBuilder stringBuilder = new StringBuilder();
+
+        // Uses the top of the screen to showoff what tab you are currently on.
+        stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.Append("Example Tab").AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
+
+        // Makes text below the "titlebar".
+        stringBuilder.AppendLine("Computer Interface Example!");
+
+        return stringBuilder.ToString();
+    }
+
+    // When a button on the keyboard is pressed, the button pressed is sent back as a parameter to be used.
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Back:
+                // 'ReturnToMainMenu()' is used to return to the MainMenuView.
                 ReturnToMainMenu();
                 break;
-            case EKeyboardKey.Option1:
-                // 'ShowView<TargetView>();' can be used to switch to another view.
+            case EKeyboardButton.Option1:
+                // 'ShowView<TargetView>()' can be used to switch to another view.
                 ShowView<ExampleHelpView>();
                 break;
         }
@@ -131,20 +120,20 @@ public class ExampleView : ComputerView {
 }
 ```
 
-To add a view to the main menu, you need to create a Mod Entry, and Computer Interface will automatically detect it on launch.  
-Mod Entries must implement `IComputerModEntry`, and provide the name type of the view to be shown.
+To add a view to the main menu, you need to create a View Entry, and Computer Interface will automatically detect it on launch.  
+View Entries must implement `IComputerViewEntry`, and provide the name type of the view to be shown.
 
 For example:
 
 ```csharp
 // A selectable entry on the MainMenuView.
 // Entries are automatically detected by ComputerInterface.
-public class ExampleViewEntry : IComputerModEntry {
+public class ExampleViewEntry : IComputerViewEntry {
     // The name of the entry that will be shown.
     public string EntryName => "Example";
-    
+
     // The first view that the user is going to see when selecting your entry.
-    public Type EntryViewType => typeof(ExampleView);
+    public Type EntryComputerView => typeof(ExampleView);
 }
 ```
 
@@ -157,25 +146,42 @@ For example:
 ```csharp
 public class ExampleCommandManager : ICommandRegistrar {
     private CommandHandler _commandHandler;
-    
+
     public void Initialize() {
         // Request the CommandHandler.
         _commandHandler = CommandHandler.Singleton;
 
+        // Call the 'RegisterCommands()' function.
         RegisterCommands();
     }
 
     public void RegisterCommands() {
         // Register your commands.
-        
+
         // You can set 'argumentTypes' to null if you aren't going to have any.
         _commandHandler.AddCommand(new Command(name: "monke", argumentTypes: null, arguments => {
             // Arguments are an array of strings passed when entering the command.
             // The CommandHandler already checks if the correct amount of arguments is passed.
-            
+
             // The string you return is going to be shown in the terminal as a return message.
             // You can break up the message into multiple lines by using '\n'
             return "MONKE";
+        }));
+
+        // A somewhat more advanced command.
+        _commandHandler.AddCommand(new Command(name: "color", argumentTypes: [typeof(float), typeof(float), typeof(float)], arguments => {
+            float r = (float)arguments[0];
+            float g = (float)arguments[1];
+            float b = (float)arguments[2];
+
+            if (r > 0)
+                r /= 255;
+            if (g > 0)
+                g /= 255;
+            if (b > 0)
+                b /= 255;
+
+            return $"Color:\n\nR: {r} ({arguments[0]})\nG: {g} ({arguments[1]})\nB: {b} ({arguments[2]})";
         }));
     }
 }
@@ -185,4 +191,6 @@ This used a dummy class `ExampleCommandManager`, but of course, you can do this 
 
 ## Disclaimers
 
-This product is not affiliated with Gorilla Tag or Another Axiom LLC and is not endorsed or otherwise sponsored by Another Axiom LLC. Portions of the materials contained herein are property of Another Axiom LLC. ©2021 Another Axiom LLC.
+> [!NOTE]
+> This product is not affiliated with Another Axiom Inc. or its videogames Gorilla Tag and Orion Drift and is not endorsed or otherwise sponsored by Another Axiom.  
+Portions of the materials contained herein are property of Another Axiom. ©2021 Another Axiom Inc.

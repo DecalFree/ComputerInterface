@@ -1,0 +1,4 @@
+﻿<Solution>
+  <Project Path="ComputerInterface/ComputerInterface.csproj" />
+  <Project Path="ComputerInterface.Commands/ComputerInterface.Commands.csproj" />
+</Solution>

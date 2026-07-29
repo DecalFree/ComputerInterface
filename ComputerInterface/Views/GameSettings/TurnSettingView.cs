@@ -1,66 +1,59 @@
-﻿using ComputerInterface.Extensions;
-using System.Text;
-using ComputerInterface.Behaviours;
+﻿using System.Text;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
 
 namespace ComputerInterface.Views.GameSettings;
 
-public class TurnSettingView : ComputerView {
-    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down);
+internal class TurnSettingView : ComputerView {
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down) {
+        MaxIndex = 2
+    };
 
-    private int _turnSpeed = 4;
+    private int _turnFactor = 4;
 
-    public TurnSettingView() {
-        _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
-        _selectionHandler.MaxIdx = 2;
+    public TurnSettingView() => _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
+
+    public override void OnViewShown(object[] arguments) {
+        _selectionHandler.CurrentSelectionIndex = (int)GameInterfaceService.TurnType;
+        _turnFactor = GameInterfaceService.TurnFactor;
     }
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-        _selectionHandler.CurrentSelectionIndex = (int)BaseGameInterface.GetTurnMode();
-        _turnSpeed = BaseGameInterface.GetTurnValue();
-        Redraw();
-    }
-
-    private void SetTurnSpeed(int value) {
-        _turnSpeed = value;
-        BaseGameInterface.SetTurnValue(value);
-    }
-
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
         stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
         stringBuilder.Append("Turn Tab").AppendLine();
-        stringBuilder.AppendClr("1 - 9 to change turn speed", "ffffff50").AppendLine();
+        stringBuilder.AppendClr("1 - 9 to change turn factor", "ffffff50").AppendLine();
         stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
 
-        stringBuilder.AppendLine("Turn Mode: ");
-        stringBuilder.Append(_selectionHandler.GetIndicatedText(0, "Snap")).AppendLine()
-            .Append(_selectionHandler.GetIndicatedText(1, "Smooth")).AppendLine()
-            .Append(_selectionHandler.GetIndicatedText(2, "None")).AppendLines(2);
+        stringBuilder.AppendLine("Turn Type: ");
+        stringBuilder.AppendLine(_selectionHandler.GetIndicatedText(0, "Snap"));
+        stringBuilder.AppendLine(_selectionHandler.GetIndicatedText(1, "Smooth"));
+        stringBuilder.AppendLine(_selectionHandler.GetIndicatedText(2, "None"));
 
-        stringBuilder.Append("Speed: ").Append(_turnSpeed);
+        stringBuilder.AppendLines(1).Append("Turn Factor: ").Append(_turnFactor);
 
-        Text = stringBuilder.ToString();
+        return stringBuilder.ToString();
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        switch (key) {
-            case EKeyboardKey.Back:
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Back:
                 ShowView<GameSettingsView>();
                 break;
             default:
-                if (_selectionHandler.HandleKeypress(key)) {
-                    BaseGameInterface.SetTurnMode((ETurnMode)_selectionHandler.CurrentSelectionIndex);
-                    Redraw();
+                if (_selectionHandler.HandleButtonPress(pressedButton)) {
+                    GameInterfaceService.TurnType = (ETurnType)_selectionHandler.CurrentSelectionIndex;
+                    UpdateViewScreen();
                     return;
                 }
-                if (key.TryParseNumber(out var num)) {
-                    SetTurnSpeed(num);
-                    Redraw();
+                if (pressedButton.TryParseNumber(out int num)) {
+                    _turnFactor = num;
+                    GameInterfaceService.TurnFactor = num;
+                    UpdateViewScreen();
                 }
                 break;
         }

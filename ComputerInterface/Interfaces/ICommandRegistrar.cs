@@ -1,4 +1,4 @@
-namespace ComputerInterface.Interfaces;
+﻿namespace ComputerInterface.Interfaces;
 
 public interface ICommandRegistrar {
     void Initialize();

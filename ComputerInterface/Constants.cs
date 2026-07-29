@@ -1,9 +1,15 @@
 ﻿namespace ComputerInterface;
 
-public static class Constants {
+internal class Constants {
     public const string Guid = "tonimacaroni.computerinterface";
-    
     public const string Name = "Computer Interface";
-    
-    public const string Version = "1.9.3";
+    public const string Version = "2.0.0";
+
+    public const int MaxSessionNameLength = 10;
+    public const int MaxPeerNameLength = 12;
+    public const int MaxTroopNameLength = 12;
+    public const int MaxRedemptionCodeLength = 8;
+
+    public const int KeyboardButtonPressCooldown = 80;
+    public const float KeyboardButtonBumpAmount = 0.2f;
 }

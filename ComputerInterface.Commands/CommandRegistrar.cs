@@ -1,105 +1,57 @@
-﻿using ComputerInterface.Behaviours;
-using ComputerInterface.Enumerations;
+﻿using ComputerInterface.Behaviors;
 using ComputerInterface.Interfaces;
-using ComputerInterface.Models;
+using ComputerInterface.Models.Command;
 using UnityEngine;
 
-namespace ComputerInterface.Commands {
-    public class CommandRegistrar : ICommandRegistrar {
-        private CommandHandler _commandHandler;
-        private CustomComputer _computer;
+namespace ComputerInterface.Commands;
 
-        public void Initialize() {
-            _commandHandler = CommandHandler.Singleton;
-            _computer = CustomComputer.Singleton;
-            
-            RegisterCommands();
-        }
+public class CommandRegistrar : ICommandRegistrar {
+    private CommandHandler _commandHandler;
 
-        public void RegisterCommands() {
-            // setcolor: setcolor <r> <g> <b>
-            _commandHandler.AddCommand(new Command("setcolor", new[] { typeof(float), typeof(float), typeof(float) }, args => {
-                var r = (float)args[0];
-                var g = (float)args[1];
-                var b = (float)args[2];
+    public void Initialize() {
+        _commandHandler = CommandHandler.Singleton;
 
-                if (r > 0) r /= 255;
-                if (g > 0) g /= 255;
-                if (b > 0) b /= 255;
+        RegisterCommands();
+    }
 
-                BaseGameInterface.SetColor(r, g, b);
-                return $"Updated color:\n\nR: {r} ({args[0]})\nG: {g} ({args[1]})\nB: {b} ({args[2]})\n";
-            }));
+    public void RegisterCommands() {
+        // cam <fp|tp>
+        // Sets the users computer screen camera to either First Person (fp) or Third Person (tp).
+        _commandHandler.AddCommand(new Command("cam", [typeof(string)], arguments => {
+            Camera camera = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>();
+            if (camera == null)
+                return "Error: Could not find camera";
 
-            // setname: setname <name>
-            _commandHandler.AddCommand(new Command("setname", new[] { typeof(string) }, args => {
-                var newName = ((string)args[0]).ToUpper();
+            string argString = (string)arguments[0];
 
-                var result = BaseGameInterface.SetName(newName);
-
-                return result == EWordCheckResult.Allowed ? $"Updated name: {newName.Replace(" ", "")}" : $"Error: {BaseGameInterface.WordCheckResultToMessage(result)}";
-            }));
-
-            // leave: leave
-            // Disconnects from the current room
-            _commandHandler.AddCommand(new Command("leave", null, args => {
-                if (NetworkSystem.Instance.InRoom) {
-                    BaseGameInterface.Disconnect();
-                    return "Left room!";
-                }
-                return "You aren't currently in a room.";
-            }));
-
-            // join <roomId>
-            // Join a private room
-            _commandHandler.AddCommand(new Command("join", new[] { typeof(string) }, args => {
-                var roomId = (string)args[0];
-
-                roomId = roomId.ToUpper();
-                var result = BaseGameInterface.JoinRoom(roomId);
-
-                return result == EWordCheckResult.Allowed ? $"Joining room: {roomId}" : $"Error: {BaseGameInterface.WordCheckResultToMessage(result)}";
-            }));
-
-            // cam <fp|tp>
-            // Sets the screen camera to either first or third person
-            _commandHandler.AddCommand(new Command("cam", new[] { typeof(string) }, args => {
-                var camera = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<Camera>();
-                if (camera == null)
-                    return "Error: Could not find camera";
-
-                var argString = (string)args[0];
-
-                if (argString == "fp" || argString == "tp") {
-                    camera.enabled = argString == "tp";
-                    return $"Updated camera: {(argString == "tp" ? "Third" : "First")} person";
-                }
-
+            if (argString is not ("fp" or "tp"))
                 return "Invalid syntax! Use fp/tp to use the command";
-            }));
 
-            // setbg <r> <g> <b>
-            // Sets the background of the screen
-            _commandHandler.AddCommand(new Command("setbg", new[] { typeof(float), typeof(float), typeof(float) }, args => {
-                var r = (float)args[0];
-                var g = (float)args[1];
-                var b = (float)args[2];
+            camera.enabled = argString == "tp";
+            return $"Updated camera: {(argString == "tp" ? "Third" : "First")} person";
+        }));
 
-                if (r > 0) r /= 255;
-                if (g > 0) g /= 255;
-                if (b > 0) b /= 255;
+        // setbg <r> <g> <b>
+        // Sets the background color of the computer's screen. (e.g. setbg 40 70 40)
+        _commandHandler.AddCommand(new Command("setbg", [typeof(float), typeof(float), typeof(float)], arguments => {
+            float r = (float)arguments[0];
+            float g = (float)arguments[1];
+            float b = (float)arguments[2];
 
-                _computer.SetBG(r, g, b);
+            if (r > 0) r /= 255;
+            if (g > 0) g /= 255;
+            if (b > 0) b /= 255;
 
-                return $"Updated background:\n\nR: {r} ({args[0]})\nG: {g} ({args[1]})\nB: {b} ({args[2]})\n";
-            }));
-            
-            // resetbg
-            // Resets the background of the screen
-            _commandHandler.AddCommand(new Command("resetbg", null, args => {
-                _computer.SetBGImage(new ComputerViewChangeBackgroundEventArgs(_computer.GetTexture(_computer.GetScreenBackgroundPath())));
-                return "Successfully reset background";
-            }));
-        }
+            Main.Singleton.SetBackgroundColor(r, g, b);
+
+            return $"Updated background:\n\nR: {r} ({arguments[0]})\nG: {g} ({arguments[1]})\nB: {b} ({arguments[2]})\n";
+        }));
+
+        // refreshbg
+        // Refreshes the background of the computer's screen.
+        _commandHandler.AddCommand(new Command("refreshbg", null, _ => {
+            Main.Singleton.SetBackgroundImage(Main.Singleton.GetTexture(Main.Singleton.GetScreenBackgroundPath()));
+            return "Successfully refreshed background";
+        }));
     }
 }

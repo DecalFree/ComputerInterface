@@ -1,40 +1,36 @@
-﻿using ComputerInterface.Extensions;
-using ComputerInterface.Interfaces;
-using GorillaNetworking;
-using System;
+﻿using System;
 using System.Text;
-using ComputerInterface.Behaviours;
+using ComputerInterface.Behaviors;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
+using ComputerInterface.Interfaces;
 using ComputerInterface.Models;
+using GorillaNetworking;
 
 namespace ComputerInterface.Views;
 
-internal class DetailsEntry : IComputerModEntry {
+internal class DetailsEntry : IComputerViewEntry {
     public string EntryName => "Details";
-    public Type EntryViewType => typeof(DetailsView);
+
+    public Type EntryComputerView => typeof(DetailsView);
 }
 
 internal class DetailsView : ComputerView {
     private string _name;
-    private string _roomCode;
+    private string _sessionName;
+
     private int _playerCount;
-    private int _playerBans;
+    private int _playersBanned;
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-        UpdateStats();
-        Redraw();
-    }
-
-    private void UpdateStats() {
-        _name = BaseGameInterface.GetName();
-        _roomCode = BaseGameInterface.GetRoomCode();
+    public override void OnViewShown(object[] arguments) {
+        _name = GameInterfaceService.GetPeerName();
+        _sessionName = GameInterfaceService.GetSessionName();
         _playerCount = NetworkSystem.Instance.GlobalPlayerCount();
-        _playerBans = GorillaComputer.instance.GetField<int>("usersBanned");
+        _playersBanned = GorillaComputer.instance.GetField<int>("usersBanned");
     }
 
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
         stringBuilder.BeginColor("ffffff50").Append("== ").EndColor();
         stringBuilder.Append("Details").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
@@ -48,21 +44,21 @@ internal class DetailsView : ComputerView {
         stringBuilder.BeginColor("ffffff50").Append("Players Online: ").EndColor();
         stringBuilder.Append($"<size=50>{_playerCount}</size>").AppendLine();
         stringBuilder.BeginColor("ffffff50").Append("Users Banned: ").EndColor();
-        stringBuilder.Append($"<size=50>{_playerBans} (Yesterday)</size>").AppendLines(3);
+        stringBuilder.Append($"<size=50>{_playersBanned} (Yesterday)</size>").AppendLines(3);
 
         stringBuilder.BeginColor("ffffff50").Append("Current Room: ").EndColor();
-        stringBuilder.Append($"<size=50>{(_roomCode.IsNullOrWhiteSpace() ? "-None-" : _roomCode)}</size>").AppendLine();
+        stringBuilder.Append($"<size=50>{(_sessionName.IsNullOrWhiteSpace() ? "-None-" : _sessionName)}</size>").AppendLine();
 
-        Text = stringBuilder.ToString();
+        return stringBuilder.ToString();
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        switch (key) {
-            case EKeyboardKey.Back:
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Back:
                 ReturnToMainMenu();
                 break;
             default:
-                Redraw();
+                UpdateViewScreen();
                 break;
         }
     }

@@ -1,63 +1,30 @@
-using ComputerInterface.Extensions;
-using System.Text;
-using ComputerInterface.Behaviours;
+﻿using System.Text;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
 using UnityEngine;
 
 namespace ComputerInterface.Views.GameSettings;
 
-public class ColorSettingView : ComputerView {
-    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down) {
-        MaxIdx = 2
+internal class ColorSettingView : ComputerView {
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down) {
+        MaxIndex = 2
     };
-    private readonly UISelectionHandler _columnSelectionHandler = new(EKeyboardKey.Left, EKeyboardKey.Right) {
-        MaxIdx = 2
+    private readonly UISelectionHandler _columnSelectionHandler = new(EKeyboardButton.Left, EKeyboardButton.Right) {
+        MaxIndex = 2
     };
-    private Color _color;
-    private Color _savedColor;
 
-    private string _rString = "255";
-    private string _gString = "255";
-    private string _bString = "255";
+    private Color _peerColor;
+    private Color _savedPeerColor;
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-
-        _color = BaseGameInterface.GetColor();
-        SetColor(BaseGameInterface.GetColor());
-        _savedColor = _color;
-
-        Redraw();
-    }
-
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
-        stringBuilder.BeginColor(_color).Repeat("=", ScreenWidth).EndColor().AppendLine();
-        stringBuilder.BeginCenter().Append("Color Tab").AppendLine();
-        stringBuilder.AppendClr("Values are from 0 - 255", "ffffff50").EndAlign().AppendLine();
-        stringBuilder.BeginColor(_color).Repeat("=", ScreenWidth).EndColor().AppendLines(2);
-
-        stringBuilder.AppendClr(" R: ", "ffffff50");
-        DrawValue(stringBuilder, _rString, 0);
-        stringBuilder.AppendClr($"<size=40>  Current: {Mathf.RoundToInt(_savedColor.r * 255).ToString().PadLeft(3, '0')}</size>", "ffffff50").AppendLine();
-
-        stringBuilder.AppendClr(" G: ", "ffffff50");
-        DrawValue(stringBuilder, _gString, 1);
-        stringBuilder.AppendClr($"<size=40>  Current: {Mathf.RoundToInt(_savedColor.g * 255).ToString().PadLeft(3, '0')}</size>", "ffffff50").AppendLine();
-
-        stringBuilder.AppendClr(" B: ", "ffffff50");
-        DrawValue(stringBuilder, _bString, 2);
-        stringBuilder.AppendClr($"<size=40>  Current: {Mathf.RoundToInt(_savedColor.b * 255).ToString().PadLeft(3, '0')}</size>", "ffffff50").AppendLine();
-
-        stringBuilder.AppendLines(3).AppendClr(" * Press Enter to update your color.", "ffffff50").AppendLine();
-
-        Text = stringBuilder.ToString();
-    }
+    private string _redString = "255";
+    private string _greenString = "255";
+    private string _blueString = "255";
 
     private void DrawValue(StringBuilder stringBuilder, string value, int lineNum) {
-        for (var i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             if (_columnSelectionHandler.CurrentSelectionIndex == i && lineNum == _selectionHandler.CurrentSelectionIndex) {
                 stringBuilder.BeginColor(PrimaryColor).Append(value[i]).EndColor();
                 continue;
@@ -67,63 +34,91 @@ public class ColorSettingView : ComputerView {
         }
     }
 
-    private void SetColor(Color color) {
-        _color = color;
-        _rString = Mathf.RoundToInt(color.r * 255).ToString().PadLeft(3, '0');
-        _gString = Mathf.RoundToInt(color.g * 255).ToString().PadLeft(3, '0');
-        _bString = Mathf.RoundToInt(color.b * 255).ToString().PadLeft(3, '0');
+    private void SetValOnString(ref string str, int column, char chr) {
+        char[] ch = str.ToCharArray();
+        ch[column] = chr;
+        str = new string(ch);
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        switch (key) {
-            case EKeyboardKey.Enter:
-                BaseGameInterface.SetColor(_color);
-                _savedColor = _color;
-                Redraw();
+    public override void OnViewShown(object[] arguments) {
+        _peerColor = GameInterfaceService.PeerColor;
+
+        _redString = Mathf.RoundToInt(_peerColor.r * 255).ToString().PadLeft(3, '0');
+        _greenString = Mathf.RoundToInt(_peerColor.g * 255).ToString().PadLeft(3, '0');
+        _blueString = Mathf.RoundToInt(_peerColor.b * 255).ToString().PadLeft(3, '0');
+
+        _savedPeerColor = _peerColor;
+    }
+
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
+
+        stringBuilder.BeginCenter().BeginColor(_peerColor).Repeat("=", ScreenWidth).EndColor().AppendLine();
+        stringBuilder.Append("Color Tab").AppendLine();
+        stringBuilder.AppendClr("Values are from 0 - 255", "ffffff50").AppendLine();
+        stringBuilder.BeginColor(_peerColor).Repeat("=", ScreenWidth).EndColor().EndAlign().AppendLines(2);
+
+        stringBuilder.AppendClr(" R: ", "ffffff50");
+        DrawValue(stringBuilder, _redString, 0);
+        stringBuilder.AppendClr($"<size=40>  Current: {Mathf.RoundToInt(_savedPeerColor.r * 255).ToString().PadLeft(3, '0')}</size>", "ffffff50").AppendLine();
+
+        stringBuilder.AppendClr(" G: ", "ffffff50");
+        DrawValue(stringBuilder, _greenString, 1);
+        stringBuilder.AppendClr($"<size=40>  Current: {Mathf.RoundToInt(_savedPeerColor.g * 255).ToString().PadLeft(3, '0')}</size>", "ffffff50").AppendLine();
+
+        stringBuilder.AppendClr(" B: ", "ffffff50");
+        DrawValue(stringBuilder, _blueString, 2);
+        stringBuilder.AppendClr($"<size=40>  Current: {Mathf.RoundToInt(_savedPeerColor.b * 255).ToString().PadLeft(3, '0')}</size>", "ffffff50").AppendLine();
+
+        stringBuilder.AppendLines(3).AppendClr("* Press Enter to update your color.", "ffffff50").AppendLine();
+
+        return stringBuilder.ToString();
+    }
+
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Enter:
+                GameInterfaceService.PeerColor = _peerColor;
+                _savedPeerColor = _peerColor;
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Back:
-                ReturnView();
+            case EKeyboardButton.Back:
+                ShowView<GameSettingsView>();
                 break;
             default:
-                if (key.IsNumberKey()) {
-                    var line = _selectionHandler.CurrentSelectionIndex;
-                    var column = _columnSelectionHandler.CurrentSelectionIndex;
-                    var numChar = key.ToString().Substring(3)[0];
+                if (pressedButton.IsNumberKey()) {
+                    int line = _selectionHandler.CurrentSelectionIndex;
+                    int column = _columnSelectionHandler.CurrentSelectionIndex;
+                    char numChar = pressedButton.ToString()[3..][0];
 
                     switch (line) {
                         case 0:
-                            SetValOnString(ref _rString, column, numChar);
+                            SetValOnString(ref _redString, column, numChar);
                             break;
                         case 1:
-                            SetValOnString(ref _gString, column, numChar);
+                            SetValOnString(ref _greenString, column, numChar);
                             break;
                         case 2:
-                            SetValOnString(ref _bString, column, numChar);
+                            SetValOnString(ref _blueString, column, numChar);
                             break;
                     }
 
-                    var r = Mathf.Clamp(int.Parse(_rString), 0, 255);
-                    var g = Mathf.Clamp(int.Parse(_gString), 0, 255);
-                    var b = Mathf.Clamp(int.Parse(_bString), 0, 255);
+                    int r = Mathf.Clamp(int.Parse(_redString), 0, 255);
+                    int g = Mathf.Clamp(int.Parse(_greenString), 0, 255);
+                    int b = Mathf.Clamp(int.Parse(_blueString), 0, 255);
 
-                    _rString = r.ToString().PadLeft(3, '0');
-                    _gString = g.ToString().PadLeft(3, '0');
-                    _bString = b.ToString().PadLeft(3, '0');
+                    _redString = r.ToString().PadLeft(3, '0');
+                    _greenString = g.ToString().PadLeft(3, '0');
+                    _blueString = b.ToString().PadLeft(3, '0');
 
-                    _color = new Color(r / 255f, g / 255f, b / 255f);
+                    _peerColor = new Color(r / 255f, g / 255f, b / 255f);
                     _columnSelectionHandler.MoveSelectionDown();
-                    Redraw();
+                    UpdateViewScreen();
                     break;
                 }
-                if (_selectionHandler.HandleKeypress(key) || _columnSelectionHandler.HandleKeypress(key))
-                    Redraw();
+                if (_selectionHandler.HandleButtonPress(pressedButton) || _columnSelectionHandler.HandleButtonPress(pressedButton))
+                    UpdateViewScreen();
                 break;
         }
-    }
-
-    private void SetValOnString(ref string str, int column, char chr) {
-        var ch = str.ToCharArray();
-        ch[column] = chr;
-        str = new string(ch);
     }
 }

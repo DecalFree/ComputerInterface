@@ -1,91 +1,83 @@
-﻿using ComputerInterface.Extensions;
-using System.Text;
+﻿using System.Text;
+using BepInEx;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
 
 namespace ComputerInterface.Views;
 
 internal class ModView : ComputerView {
     private ModListView.ModListItem _plugin;
 
-    private readonly UISelectionHandler _selectionHandler = new(EKeyboardKey.Up, EKeyboardKey.Down, EKeyboardKey.Enter);
+    private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down, EKeyboardButton.Enter) {
+        MaxIndex = 1
+    };
 
-    public ModView() {
-        _selectionHandler.OnSelected += OnOptionSelected;
-        _selectionHandler.MaxIdx = 1;
-    }
+    public ModView() => _selectionHandler.OnSelected += OnOptionSelected;
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-        if (args == null || args.Length == 0)
+    private void OnOptionSelected(int index) {
+        if (!_plugin.Supported)
             return;
 
-        _plugin = (ModListView.ModListItem)args[0];
-        Redraw();
+        switch (index) {
+            case 0:
+                // Enable was pressed
+                _plugin.PluginInfo.Instance.enabled = true;
+                Plugin.CIConfig.RemoveDisabledMod(_plugin.PluginInfo.Metadata.GUID);
+                return;
+            case 1:
+                // Disable was pressed
+                _plugin.PluginInfo.Instance.enabled = false;
+                Plugin.CIConfig.AddDisabledMod(_plugin.PluginInfo.Metadata.GUID);
+                break;
+        }
+
+        UpdateViewScreen();
     }
 
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
+    private string GetSelectionString(int index, string character) => _selectionHandler.CurrentSelectionIndex == index ? "<color=#ed6540>" + character + "</color>" : " ";
 
-        RedrawHeader(stringBuilder);
-        RedrawSelection(stringBuilder);
-        DrawNotice(stringBuilder);
+    public override void OnViewShown(object[] arguments) {
+        if (arguments == null || arguments.Length == 0)
+            return;
 
-        Text = stringBuilder.ToString();
+        _plugin = (ModListView.ModListItem)arguments[0];
     }
 
-    private void RedrawHeader(StringBuilder stringBuilder) {
-        var pluginInfo = _plugin.PluginInfo;
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
+
+        PluginInfo pluginInfo = _plugin.PluginInfo;
         stringBuilder.BeginColor("ffffff50").Append("== ").EndColor();
         stringBuilder.Append($"{pluginInfo.Metadata.Name} ({(_plugin.PluginInfo.Instance.enabled ? "<color=#00ff00>Enabled</color>" : "<color=#ff0000>Disabled</color>")})").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
         stringBuilder.Append($"<size=40>{pluginInfo.Metadata.GUID}, v{pluginInfo.Metadata.Version}</size>").AppendLines(2);
-    }
 
-    private void RedrawSelection(StringBuilder stringBuilder) {
         stringBuilder.AppendLine();
         stringBuilder.Append(GetSelectionString(0, "[")).Append("<color=#7Cff7C>Enabled</color>").Append(GetSelectionString(0, "]")).AppendLine();
         stringBuilder.Append(GetSelectionString(1, "[")).Append("<color=#ff7C7C>Disabled</color>").Append(GetSelectionString(1, "]")).AppendLine();
         stringBuilder.AppendLine().AppendLine();
-    }
 
-    private void DrawNotice(StringBuilder stringBuilder) {
         if (!_plugin.Supported) {
             stringBuilder.BeginCenter().AppendClr("This mod doesn't support toggling between Enabled/Disabled states.", "ff505050").EndAlign();
-            return;
+            return stringBuilder.ToString();
         }
 
         stringBuilder.Append("1. Select an option, either Enable or Disable").AppendLines(2);
         stringBuilder.Append("2. Press Enter, the mod will be toggled accordingly");
+
+        return stringBuilder.ToString();
     }
 
-    private string GetSelectionString(int idx, string character) =>
-        _selectionHandler.CurrentSelectionIndex == idx ? "<color=#ed6540>" + character + "</color>" : " ";
-
-    private void OnOptionSelected(int idx) {
-        if (idx == 0) {
-            // Enable was pressed
-            _plugin.PluginInfo.Instance.enabled = true;
-            Plugin.CIConfig.RemoveDisabledMod(_plugin.PluginInfo.Metadata.GUID);
-            return;
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Back:
+                ReturnToPreviousView();
+                break;
+            default:
+                if (_selectionHandler.HandleButtonPress(pressedButton))
+                    UpdateViewScreen();
+                break;
         }
-
-        if (idx == 1) {
-            // Disable was pressed
-            _plugin.PluginInfo.Instance.enabled = false;
-            Plugin.CIConfig.AddDisabledMod(_plugin.PluginInfo.Metadata.GUID);
-        }
-
-        Redraw();
-    }
-
-    public override void OnKeyPressed(EKeyboardKey key) {
-        if (_selectionHandler.HandleKeypress(key)) {
-            Redraw();
-            return;
-        }
-
-        if (key == EKeyboardKey.Back)
-            ReturnView();
     }
 }

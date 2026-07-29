@@ -1,100 +1,84 @@
 ﻿using System.Text;
-using ComputerInterface.Behaviours;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
 using UnityEngine;
 
 namespace ComputerInterface.Views.GameSettings;
 
-public class TroopView : ComputerView {
+internal class TroopView : ComputerView {
     private readonly UITextInputHandler _textInputHandler = new();
-    private EWordCheckResult _wordCheckResult;
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-        
-        Redraw();
-    }
+    private bool ShowFailureMessage => _failureMessage != null;
+    private string _failureMessage;
 
-    private void Redraw() {
-        BaseGameInterface.CheckForComputer(out var computer);
-        
-        var stringBuilder = new StringBuilder();
-        
-        stringBuilder.Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.BeginCenter().Append("Troop Tab").AppendLine();
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
-        var showState = !BaseGameInterface.IsInTroop();
-        
-        if (showState) {
-            switch (_wordCheckResult) {
-                case EWordCheckResult.Allowed:
-                    stringBuilder.AppendClr("Ready - Enter to Join or Create Troop", "ffffff50").EndAlign().AppendLine();
+        stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.Append("Troop Tab").AppendLine();
+
+        if (!GameInterfaceService.IsInTroop) {
+            switch (ShowFailureMessage) {
+                case true:
+                    stringBuilder.AppendClr(_failureMessage, "ffffff50").AppendLine();
                     break;
-                case EWordCheckResult.Blank:
-                    stringBuilder.AppendClr("Error - Troop is Blank", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case EWordCheckResult.Empty:
-                    stringBuilder.AppendClr("Error - Troop is Empty", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case EWordCheckResult.TooLong:
-                    stringBuilder.AppendClr("Error - Troop Exceeds Character Limit", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case EWordCheckResult.NotAllowed:
-                    stringBuilder.AppendClr("Error - Troop Inappropriate", "ffffff50").EndAlign().AppendLine();
+                case false:
+                    if (_textInputHandler.Text != GameInterfaceService.Computer.currentName)
+                        stringBuilder.AppendClr("Ready - Enter to Join or Create Troop", "ffffff50").AppendLine();
                     break;
             }
         }
 
-        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLine();
-        stringBuilder.AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
 
-        if (BaseGameInterface.IsValidTroopName(computer.troopName)) {
-            stringBuilder.AppendLine($"Current Troop: {BaseGameInterface.GetCurrentTroop()}");
-            stringBuilder.AppendLine($"Players In Troop: {Mathf.Max(1, computer.GetCurrentTroopPopulation())}");
-            
-            stringBuilder.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append(computer.troopQueueActive ? "Press Option 2 for default queue." : "Press Option 1 for troop queue.");
-            stringBuilder.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append("Press Option 3 to leave your troop.");
+        if (GameInterfaceService.IsValidTroopName(GameInterfaceService.Computer.troopName)) {
+            stringBuilder.AppendLine($"Current Troop: {(GameInterfaceService.TroopQueueActive ? GameInterfaceService.TroopName : GameInterfaceService.Queue)}");
+            stringBuilder.AppendLine($"Players In Troop: {Mathf.Max(1, GameInterfaceService.TroopPopulation)}");
+
+            stringBuilder.AppendLines(4).AppendClr($"* {(GameInterfaceService.TroopQueueActive ? "Press Option 2 for default queue." : "Press Option 1 for troop queue.")}", "ffffff50").AppendLine();
+            stringBuilder.AppendClr("* Press Option 3 to leave your troop.", "ffffff50").AppendLine();
         }
         else {
             stringBuilder.BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
-            
-            stringBuilder.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append("Press Enter to join or create a troop.");
+
+            stringBuilder.AppendLines(6).AppendClr("* Press Enter to join or create a troop.", "ffffff50").AppendLine();
         }
 
-        Text = stringBuilder.ToString();
+        return stringBuilder.ToString();
     }
-    
-    public override void OnKeyPressed(EKeyboardKey key) {
-        if (!BaseGameInterface.IsInTroop() && _textInputHandler.HandleKey(key)) {
-            if (_textInputHandler.Text.Length > BaseGameInterface.MaxTroopLength)
-                _textInputHandler.Text = _textInputHandler.Text[..BaseGameInterface.MaxTroopLength];
 
-            Redraw();
-            return;
-        }
-        
-        switch (key) {
-            case EKeyboardKey.Option1:
-                BaseGameInterface.JoinTroopQueue();
-                Redraw();
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Option1:
+                GameInterfaceService.JoinTroopQueue();
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Option2:
-                BaseGameInterface.JoinDefaultQueue();
-                Redraw();
+            case EKeyboardButton.Option2:
+                GameInterfaceService.Queue = "DEFAULT";
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Option3:
-                BaseGameInterface.LeaveTroop();
-                Redraw();
+            case EKeyboardButton.Option3:
+                GameInterfaceService.LeaveTroop();
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Enter:
-                _wordCheckResult = BaseGameInterface.JoinTroop(_textInputHandler.Text);
-                Redraw();
+            case EKeyboardButton.Enter:
+                (bool isSuccessful, string failureMessage) joinTroop = GameInterfaceService.JoinTroop(_textInputHandler.Text);
+                _failureMessage = joinTroop.failureMessage;
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Back:
+            case EKeyboardButton.Back:
                 ShowView<GameSettingsView>();
+                break;
+            default:
+                if (!GameInterfaceService.IsInTroop && _textInputHandler.HandleButtonPress(pressedButton)) {
+                    if (_textInputHandler.Text.Length > Constants.MaxTroopNameLength)
+                        _textInputHandler.Text = _textInputHandler.Text[..Constants.MaxTroopNameLength];
+
+                    UpdateViewScreen();
+                }
                 break;
         }
     }

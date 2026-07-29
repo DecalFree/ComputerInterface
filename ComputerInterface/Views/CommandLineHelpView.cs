@@ -1,26 +1,27 @@
-﻿using ComputerInterface.Extensions;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
-using ComputerInterface.Behaviours;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
+using ComputerInterface.Models.Command;
 
 namespace ComputerInterface.Views;
 
-public class CommandLineHelpView : ComputerView {
+internal class CommandLineHelpView : ComputerView {
     private readonly CommandHandler _commandHandler = CommandHandler.Singleton;
-    private readonly UITextPageHandler _pageHandler = new(EKeyboardKey.Left, EKeyboardKey.Right) {
+    private readonly UITextPageHandler _pageHandler = new(EKeyboardButton.Left, EKeyboardButton.Right) {
         EntriesPerPage = 8
     };
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
+    public override void OnViewShown(object[] arguments) {
+        IList<Command> commands = _commandHandler.GetAllCommands();
+        string[] lines = new string[commands.Count];
 
-        var commands = _commandHandler.GetAllCommands();
-        var lines = new string[commands.Count];
-
-        for (var i = 0; i < lines.Length; i++) {
-            var command = commands[i];
+        for (int i = 0; i < lines.Length; i++) {
+            Command command = commands[i];
 
             lines[i] = "- ";
 
@@ -29,40 +30,30 @@ public class CommandLineHelpView : ComputerView {
 
             lines[i] += command.Name;
 
-            if (command.ArgumentTypes != null) {
-                foreach (var argType in command.ArgumentTypes) {
-                    if (argType == null) {
-                        lines[i] += " <string>";
-                        continue;
-                    }
+            if (command.ArgumentTypes == null)
+                continue;
 
-                    lines[i] += " <" + argType.Name + ">";
+            foreach (Type argumentType in command.ArgumentTypes) {
+                if (argumentType == null) {
+                    lines[i] += " <string>";
+                    continue;
                 }
+
+                lines[i] += " <" + argumentType.Name + ">";
             }
         }
         _pageHandler.SetLines(lines);
-
-        Redraw();
     }
 
-    private void Redraw() {
-        var stringBuilder = new StringBuilder();
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
-        DrawHeader(stringBuilder);
-        DrawCommands(stringBuilder);
-
-        SetText(stringBuilder);
-    }
-
-    private void DrawHeader(StringBuilder stringBuilder) {
         stringBuilder.BeginColor("ffffff50").Append("== ").EndColor();
         stringBuilder.Append("Command Line Info").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
-        stringBuilder.Append("<size=40>Nativate using the Left/Right arrow keys</size>").AppendLines(2);
-    }
+        stringBuilder.Append("<size=40>Navigate using the Left/Right arrow keys</size>").AppendLines(2);
 
-    private void DrawCommands(StringBuilder stringBuilder) {
-        var lines = _pageHandler.GetLinesForCurrentPage();
-        foreach (var line in lines) {
+        string[] lines = _pageHandler.GetLinesForCurrentPage();
+        foreach (string line in lines) {
             stringBuilder.Append(line);
             stringBuilder.AppendLine();
         }
@@ -70,17 +61,18 @@ public class CommandLineHelpView : ComputerView {
         stringBuilder.AppendLine();
         _pageHandler.AppendFooter(stringBuilder);
         stringBuilder.AppendLine();
+
+        return stringBuilder.ToString();
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        if (_pageHandler.HandleKeyPress(key)) {
-            Redraw();
-            return;
-        }
-
-        switch (key) {
-            case EKeyboardKey.Back:
-                ReturnView();
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Back:
+                ReturnToPreviousView();
+                break;
+            default:
+                if (_pageHandler.HandleButtonPress(pressedButton))
+                    UpdateViewScreen();
                 break;
         }
     }

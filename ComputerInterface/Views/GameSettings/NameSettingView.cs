@@ -1,93 +1,80 @@
-﻿using ComputerInterface.Extensions;
-using System.Text;
-using ComputerInterface.Behaviours;
+﻿using System.Text;
+using ComputerInterface.Behaviors;
+using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
+using ComputerInterface.Extensions;
 using ComputerInterface.Models;
-using ComputerInterface.Models.UI;
 
 namespace ComputerInterface.Views.GameSettings;
 
-public class NameSettingView : ComputerView {
+internal class NameSettingView : ComputerView {
     private readonly UITextInputHandler _textInputHandler = new();
-    private EWordCheckResult _wordCheckResult;
 
-    public override void OnShow(object[] args) {
-        base.OnShow(args);
-        _textInputHandler.Text = BaseGameInterface.GetName();
+    private bool ShowFailureMessage => _failureMessage != null && _textInputHandler.Text != GameInterfaceService.Computer.currentName;
+    private string _failureMessage;
 
-        Redraw();
-    }
+    public override void OnViewShown(object[] arguments) => _textInputHandler.Text = GameInterfaceService.GetPeerName();
 
-    private void Redraw() {
-        BaseGameInterface.CheckForComputer(out var computer);
+    protected override string GetViewText() {
+        StringBuilder stringBuilder = new();
 
-        var stringBuilder = new StringBuilder();
+        stringBuilder.BeginCenter().Repeat("=", ScreenWidth).AppendLine();
+        stringBuilder.Append("Name Tab").AppendLine();
 
-        stringBuilder.Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.BeginCenter().Append("Name Tab").AppendLine();
+        bool showState = true;
 
-        var showState = true;
-
-        if (_textInputHandler.Text == computer.savedName) {
+        if (_textInputHandler.Text == GameInterfaceService.Computer.savedName) {
             stringBuilder.AppendClr("Name Synchronized", "ffffff50").EndAlign().AppendLine();
             showState = false;
         }
 
         if (showState) {
-            switch (_wordCheckResult) {
-                case EWordCheckResult.Allowed:
-                    stringBuilder.AppendClr("Ready - Enter to Update", "ffffff50").EndAlign().AppendLine();
+            switch (ShowFailureMessage) {
+                case true:
+                    stringBuilder.AppendClr(_failureMessage, "ffffff50").AppendLine();
                     break;
-                case EWordCheckResult.Blank:
-                    stringBuilder.AppendClr("Error - Name is Blank", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case EWordCheckResult.Empty:
-                    stringBuilder.AppendClr("Error - Name is Empty", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case EWordCheckResult.TooLong:
-                    stringBuilder.AppendClr("Error - Name Exceeds Character Limit", "ffffff50").EndAlign().AppendLine();
-                    break;
-                case EWordCheckResult.NotAllowed:
-                    stringBuilder.AppendClr("Error - Name Inappropriate", "ffffff50").EndAlign().AppendLine();
+                case false:
+                    if (_textInputHandler.Text != GameInterfaceService.Computer.currentName)
+                        stringBuilder.AppendClr("Ready - Enter to Update", "ffffff50").AppendLine();
                     break;
             }
         }
 
-        stringBuilder.Repeat("=", ScreenWidth).AppendLine();
-        stringBuilder.AppendLine();
+        stringBuilder.Repeat("=", ScreenWidth).EndAlign().AppendLines(2);
 
         stringBuilder.BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
-        stringBuilder.AppendLines(2).AppendLine($"Nametags: {(BaseGameInterface.GetNametagsEnabled() ? "Enabled" : "Disabled")}");
-            
-        stringBuilder.AppendLines(2).BeginColor("ffffff50").Append("* ").EndColor().Append("Press Enter to change your name.");
-        stringBuilder.AppendLine().BeginColor("ffffff50").Append("* ").EndColor().Append("Press Option 1 to toggle nametags.");
+        stringBuilder.AppendLines(2).AppendLine($"Nametags: {(GameInterfaceService.Nametags ? "Enabled" : "Disabled")}");
 
-        Text = stringBuilder.ToString();
+        stringBuilder.AppendLines(2).AppendClr("* Press Enter to change your name.", "ffffff50").AppendLine();
+        stringBuilder.AppendClr("* Press Option 1 to toggle nametags.", "ffffff50").AppendLine();
+
+        return stringBuilder.ToString();
     }
 
-    public override void OnKeyPressed(EKeyboardKey key) {
-        if (BaseGameInterface.GetNametagsEnabled() && _textInputHandler.HandleKey(key)) {
-            if (_textInputHandler.Text.Length > BaseGameInterface.MaxNameLength)
-                _textInputHandler.Text = _textInputHandler.Text[..BaseGameInterface.MaxNameLength];
-
-            Redraw();
-            return;
-        }
-
-        switch (key) {
-            case EKeyboardKey.Enter:
-                if (BaseGameInterface.GetNametagsEnabled()) {
-                    _wordCheckResult = BaseGameInterface.SetName(_textInputHandler.Text);
-                    Redraw();
+    public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        switch (pressedButton) {
+            case EKeyboardButton.Enter:
+                if (GameInterfaceService.Nametags) {
+                    (bool isSuccessful, string failureMessage) setPeerName = GameInterfaceService.SetPeerName(_textInputHandler.Text);
+                    _failureMessage = setPeerName.failureMessage;
+                    UpdateViewScreen();
                 }
                 break;
-            case EKeyboardKey.Option1:
-                BaseGameInterface.SetNametagSetting(!BaseGameInterface.GetNametagsEnabled());
-                Redraw();
+            case EKeyboardButton.Option1:
+                GameInterfaceService.Nametags = !GameInterfaceService.Nametags;
+                UpdateViewScreen();
                 break;
-            case EKeyboardKey.Back:
-                _textInputHandler.Text = BaseGameInterface.GetName();
+            case EKeyboardButton.Back:
+                _textInputHandler.Text = GameInterfaceService.GetPeerName();
                 ShowView<GameSettingsView>();
+                break;
+            default:
+                if (GameInterfaceService.Nametags && _textInputHandler.HandleButtonPress(pressedButton)) {
+                    if (_textInputHandler.Text.Length > Constants.MaxPeerNameLength)
+                        _textInputHandler.Text = _textInputHandler.Text[..Constants.MaxPeerNameLength];
+
+                    UpdateViewScreen();
+                }
                 break;
         }
     }
