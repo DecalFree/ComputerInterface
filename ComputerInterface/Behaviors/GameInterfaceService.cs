@@ -60,7 +60,8 @@ public static class GameInterfaceService {
         if (IsPeerInVirtualStump)
             CustomMapManager.UnloadMap(false);
 
-        PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(sessionName, IsPeerInParty ? JoinType.JoinWithParty : JoinType.Solo);
+        PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(IsPeerInVirtualStump ? Computer.VStumpRoomPrepend + sessionName : sessionName,
+            IsPeerInParty ? JoinType.JoinWithParty : JoinType.Solo);
 
         return (true, null);
     }
