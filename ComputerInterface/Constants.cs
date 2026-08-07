@@ -3,7 +3,7 @@
 internal class Constants {
     public const string Guid = "tonimacaroni.computerinterface";
     public const string Name = "Computer Interface";
-    public const string Version = "2.0.0";
+    public const string Version = "2.0.1";
 
     public const int MaxSessionNameLength = 10;
     public const int MaxPeerNameLength = 12;

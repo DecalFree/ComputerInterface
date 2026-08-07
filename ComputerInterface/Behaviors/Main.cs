@@ -42,6 +42,7 @@ public class Main : MonoBehaviourTick {
 
     private MainMenuView _mainMenuView;
     private WarningView _warningView;
+    private SafetyWarningView _safetyWarningView;
 
     public event Action<GorillaComputerTerminal> OnCustomTerminalPrepared;
 
@@ -78,6 +79,8 @@ public class Main : MonoBehaviourTick {
 
         _mainMenuView = new MainMenuView();
         _warningView = new WarningView();
+        _safetyWarningView = new SafetyWarningView();
+
         _cachedComputerViews.Add(typeof(MainMenuView), _mainMenuView);
 
         if (!GameInterfaceService.Computer.initialized)
@@ -162,6 +165,9 @@ public class Main : MonoBehaviourTick {
             Logging.Error($"Computer Interface failed to successfully end initializing: {exception.Message}");
         }
 
+        if (!_ciConfig.AcknowledgedSafetyWarning.Value)
+            SwitchComputerView(_safetyWarningView, null);
+
         try {
             using HttpRequestMessage request = new(HttpMethod.Get, "https://raw.githubusercontent.com/DecalFree/ComputerInterface/main/Version.txt");
 
@@ -212,6 +218,7 @@ public class Main : MonoBehaviourTick {
         monitorAsset.transform.localPosition = new Vector3(-0.0787f + 0.082f, -0.12f - 0.2f, 0.5344f - 0.02f + 0.003f);
         monitorAsset.transform.localEulerAngles = Vector3.right * 85f;
         monitorAsset.transform.SetParent(computerTerminal.transform);
+        monitorAsset.transform.Find("Classic Monitor Prefab").gameObject.AddComponent<GorillaSurfaceOverride>();
 
         ComputerScreenInfo computerScreenInfo = new() {
             ComputerText = monitorAsset.transform.Find("Canvas/Text (TMP)").GetComponent<TextMeshProUGUI>(),
