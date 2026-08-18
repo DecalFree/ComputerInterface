@@ -23,7 +23,7 @@ internal class SafetyWarningView : ComputerView {
     public override void OnButtonPressed(EKeyboardButton pressedButton) {
         switch (pressedButton) {
             case EKeyboardButton.Enter:
-                Plugin.CIConfig.AcknowledgedSafetyWarning.Value = true;
+                PluginCore.CIConfig.AcknowledgedSafetyWarning.Value = true;
                 ReturnToMainMenu();
                 break;
         }

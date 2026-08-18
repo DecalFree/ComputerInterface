@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿#if BEPINEX
+using System.Text;
 using BepInEx;
 using ComputerInterface.Behaviors.UI;
 using ComputerInterface.Enumerations;
@@ -24,12 +25,12 @@ internal class ModView : ComputerView {
             case 0:
                 // Enable was pressed
                 _plugin.PluginInfo.Instance.enabled = true;
-                Plugin.CIConfig.RemoveDisabledMod(_plugin.PluginInfo.Metadata.GUID);
+                PluginCore.CIConfig.RemoveDisabledMod(_plugin.PluginInfo.Metadata.GUID);
                 return;
             case 1:
                 // Disable was pressed
                 _plugin.PluginInfo.Instance.enabled = false;
-                Plugin.CIConfig.AddDisabledMod(_plugin.PluginInfo.Metadata.GUID);
+                PluginCore.CIConfig.AddDisabledMod(_plugin.PluginInfo.Metadata.GUID);
                 break;
         }
 
@@ -81,3 +82,4 @@ internal class ModView : ComputerView {
         }
     }
 }
+#endif

@@ -10,17 +10,22 @@ internal static class AssetLoader {
     private static AssetBundle _storedAssetBundle;
     private static Dictionary<string, Object> _loadedAssetsCache = [];
 
-    private static Task<AssetBundle> LoadAssetBundle() {
+    private static async Task LoadAssetBundle() {
         if (_assetBundleInitialized)
-            return Task.FromResult(_storedAssetBundle);
+            return;
 
-        Stream stream = typeof(Plugin).Assembly.GetManifestResourceStream("ComputerInterface.Content.CIBundle");
-        AssetBundle newAssetBundle = AssetBundle.LoadFromStream(stream);
-        stream?.Close();
+        Stream stream = typeof(PluginCore).Assembly.GetManifestResourceStream("ComputerInterface.Content.CIBundle");
+        AssetBundleCreateRequest bundleCreateRequest = AssetBundle.LoadFromStreamAsync(stream);
+
+        TaskCompletionSource<AssetBundle> completionSource = new();
+        bundleCreateRequest.completed += _ => {
+            stream?.Close();
+            completionSource.SetResult(bundleCreateRequest.assetBundle);
+        };
+        AssetBundle newAssetBundle = await completionSource.Task;
 
         _storedAssetBundle = newAssetBundle;
         _assetBundleInitialized = true;
-        return Task.FromResult(newAssetBundle);
     }
 
     public static async Task<T> LoadAsset<T>(string assetName) where T : Object {

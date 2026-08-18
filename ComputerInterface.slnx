@@ -1,4 +1,12 @@
 ﻿<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+
+    <BuildType Name="MelonLoader" />
+    <BuildType Name="BepInEx" />
+  </Configurations>
+
   <Project Path="ComputerInterface/ComputerInterface.csproj" />
   <Project Path="ComputerInterface.Commands/ComputerInterface.Commands.csproj" />
 </Solution>

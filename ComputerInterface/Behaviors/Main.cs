@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+#if BEPINEX
 using BepInEx;
 using BepInEx.Bootstrap;
+#endif
 using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
@@ -15,6 +17,9 @@ using ComputerInterface.Views;
 using GorillaExtensions;
 using GorillaNetworking;
 using HarmonyLib;
+#if MELONLOADER
+using MelonLoader;
+#endif
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -65,9 +70,15 @@ public class Main : MonoBehaviourTick {
             new GameSettingsEntry(),
             new CommandLineEntry(),
             new DetailsEntry(),
+#if BEPINEX
             new ModListEntry()
+#endif
         ];
+#if BEPINEX
         IEnumerable<Assembly> assemblies = Chainloader.PluginInfos.Values.Select(pluginInfo => pluginInfo.Instance.GetType().Assembly).Distinct();
+#elif MELONLOADER
+        IEnumerable<Assembly> assemblies = MelonMod.RegisteredMelons.Select(melonMod => melonMod.GetType().Assembly).Distinct();
+#endif
         IEnumerable<IComputerViewEntry> foundViewEntries = assemblies.SelectMany(assembly => assembly.GetTypes())
             .Where(foundEntry => typeof(IComputerViewEntry).IsAssignableFrom(foundEntry) && !foundEntry.IsInterface)
             .Select(entryType => (IComputerViewEntry)Activator.CreateInstance(entryType)).Where(viewEntry =>
@@ -75,7 +86,7 @@ public class Main : MonoBehaviourTick {
         computerViewEntries.AddRange(foundViewEntries);
         Logging.Info($"Found {computerViewEntries.Count} physicalComputer View Entries");
 
-        _ciConfig = Plugin.CIConfig;
+        _ciConfig = PluginCore.CIConfig;
 
         _mainMenuView = new MainMenuView();
         _warningView = new WarningView();
@@ -150,8 +161,10 @@ public class Main : MonoBehaviourTick {
         });
 
         try {
+#if BEPINEX
             foreach (PluginInfo pluginInfo in Chainloader.PluginInfos.Values.Where(pluginInfo => _ciConfig.IsModDisabled(pluginInfo.Metadata.GUID)))
                 pluginInfo.Instance.enabled = false;
+#endif
 
             if (NetworkSystem.Instance.WrongVersion) {
                 SwitchComputerView(_warningView, [ new WarningView.OutdatedWarning() ]);
@@ -176,9 +189,9 @@ public class Main : MonoBehaviourTick {
 
             string latestVersionRaw = (await response.Content.ReadAsStringAsync()).Trim();
             if (Version.TryParse(latestVersionRaw, out Version latestVersion)) {
-                Logging.Info($"Using Computer Interface v{Plugin.Info.Metadata.Version} | Latest: {latestVersion}");
+                Logging.Info($"Using Computer Interface v{PluginCore.CurrentModLoader.ModVersion} | Latest: {latestVersion}");
 
-                if (latestVersion > Plugin.Info.Metadata.Version)
+                if (latestVersion > Version.Parse(PluginCore.CurrentModLoader.ModVersion))
                     SwitchComputerView(_warningView, [ new WarningView.GeneralWarning($"Computer Interface version {latestVersion} is now available!\nIt is recommended to update to avoid any issues.") ]);
             }
         }

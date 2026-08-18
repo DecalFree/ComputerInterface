@@ -6,23 +6,40 @@
         <Nullable>disable</Nullable>
 
         <GameAssemblyPath>$(GorillaTagPath)/Gorilla Tag_Data/Managed</GameAssemblyPath>
-        <LoaderAssemblyPath>$(GorillaTagPath)/BepInEx/core</LoaderAssemblyPath>
-        <LoaderModsPath>$(GorillaTagPath)/BepInEx/plugins</LoaderModsPath>
 
-        <Configurations>Debug;Release;</Configurations>
+        <Configurations>Debug;Release;MelonLoader;BepInEx</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <Target Name="CopyToPlugins" AfterTargets="Build">
-        <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(LoaderModsPath)/ToniMacaroni's Mods/Computer Interface/$(TargetName).dll"/>
+        <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(LoaderModsPath)/ToniMacaroni's Mods/Computer Interface/$(TargetName).$(Configuration).dll"/>
     </Target>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'BepInEx'">
+        <LoaderAssemblyPath>$(GorillaTagPath)/BepInEx/core</LoaderAssemblyPath>
+        <LoaderModsPath>$(GorillaTagPath)/BepInEx/plugins</LoaderModsPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'BepInEx'">
+        <Reference Include="BepInEx">
+            <HintPath>$(LoaderAssemblyPath)/BepInEx.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'MelonLoader'">
+        <LoaderAssemblyPath>$(GorillaTagPath)/MelonLoader/net35</LoaderAssemblyPath>
+        <LoaderModsPath>$(GorillaTagPath)/Mods</LoaderModsPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'MelonLoader'">
+        <Reference Include="MelonLoader">
+            <HintPath>$(LoaderAssemblyPath)/MelonLoader.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 
     <ItemGroup>
         <Reference Include="Assembly-CSharp">
             <HintPath>$(GameAssemblyPath)/Assembly-CSharp.dll</HintPath>
-        </Reference>
-        <Reference Include="BepInEx">
-            <HintPath>$(LoaderAssemblyPath)/BepInEx.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine">
             <HintPath>$(GameAssemblyPath)/UnityEngine.dll</HintPath>
@@ -33,6 +50,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ComputerInterface\ComputerInterface.csproj" />
+      <ProjectReference Include="../ComputerInterface/ComputerInterface.csproj" />
     </ItemGroup>
 </Project>

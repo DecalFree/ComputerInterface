@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if BEPINEX
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,7 +11,6 @@ using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.Models;
-using ComputerInterface.Tools;
 using HarmonyLib;
 
 namespace ComputerInterface.Views;
@@ -71,7 +71,7 @@ internal class ModListView : ComputerView {
     public ModListView() {
         IEnumerable<PluginInfo> pluginInfos = Chainloader.PluginInfos.Values.Where(plugin => !plugin.Metadata.GUID.Contains(Constants.Guid));
         _plugins = [
-            .. pluginInfos.Select(plugin => new ModListItem(plugin, Plugin.CIConfig)).OrderBy(x => !x.Supported)
+            .. pluginInfos.Select(plugin => new ModListItem(plugin, PluginCore.CIConfig)).OrderBy(x => !x.Supported)
         ];
 
         _selectionHandler = new UISelectionHandler(EKeyboardButton.Up, EKeyboardButton.Down, EKeyboardButton.Enter) {
@@ -137,3 +137,4 @@ internal class ModListView : ComputerView {
         }
     }
 }
+#endif

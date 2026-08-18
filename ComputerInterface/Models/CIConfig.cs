@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using BepInEx.Configuration;
 using ComputerInterface.Tools;
 using UnityEngine;
 
 namespace ComputerInterface.Models;
+
+#if BEPINEX
+using System.Collections.Generic;
+using BepInEx.Configuration;
 
 internal class CIConfig {
     public readonly ConfigEntry<Color> ScreenBackgroundColor;
@@ -72,3 +74,43 @@ internal class CIConfig {
         }
     }
 }
+#elif MELONLOADER
+using MelonLoader;
+
+internal class CIConfig {
+    public readonly MelonPreferences_Entry<Color> ScreenBackgroundColor;
+    public readonly MelonPreferences_Entry<string> ScreenBackgroundPath;
+    public Texture BackgroundTexture;
+
+    public readonly MelonPreferences_Entry<bool> AcknowledgedSafetyWarning;
+
+    public CIConfig() {
+        MelonPreferences_Category appearanceCategory = MelonPreferences.CreateCategory("Appearance");
+        ScreenBackgroundColor = appearanceCategory.CreateEntry("ScreenBackgroundColor", new Color(0.05f, 0.05f, 0.05f), "ScreenBackgroundColor", "The background color of the monitor screen.");
+        // Use 'Mods/background.png' instead of 'Mods/ComputerInterface/background.png' as MelonLoader doesn't support Mod/Plugin loading through subfolders by default.
+        ScreenBackgroundPath = appearanceCategory.CreateEntry("ScreenBackgroundPath", "Mods/background.png", "ScreenBackgroundPath", "The background image of the monitor screen.");
+
+        MelonPreferences_Category safetyCategory = MelonPreferences.CreateCategory("Safety");
+        AcknowledgedSafetyWarning = safetyCategory.CreateEntry("AcknowledgedSafetyWarning", false, "AcknowledgedSafetyWarning", "Indicates if the safety warning has been acknowledged by the user.");
+
+        BackgroundTexture = GetTexture(ScreenBackgroundPath.Value);
+    }
+
+    public Texture GetTexture(string path) {
+        try {
+            if (path.IsNullOrWhiteSpace())
+                return null;
+            FileInfo fileInfo = new(path);
+            if (!fileInfo.Exists)
+                return null;
+            Texture2D texture = new(2, 2);
+            texture.LoadImage(File.ReadAllBytes(fileInfo.FullName));
+            return texture;
+        }
+        catch (Exception) {
+            Logging.Error("Couldn't load one of Computer Interface's textures");
+            return null;
+        }
+    }
+}
+#endif

@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+#if BEPINEX
 using BepInEx.Bootstrap;
-using BepInEx.Configuration;
+#endif
 using ComputerInterface.Exceptions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.Models.Command;
 using ComputerInterface.Tools;
+#if MELONLOADER
+using MelonLoader;
+#endif
 using UnityEngine;
 
 namespace ComputerInterface.Behaviors;
@@ -27,7 +31,11 @@ public class CommandHandler : MonoBehaviour {
         _initialized = true;
 
         List<ICommandRegistrar> commandRegistrars = [];
+#if BEPINEX
         IEnumerable<Assembly> assemblies = Chainloader.PluginInfos.Values.Select(pluginInfo => pluginInfo.Instance.GetType().Assembly).Distinct();
+#elif MELONLOADER
+        IEnumerable<Assembly> assemblies = MelonMod.RegisteredMelons.Select(melonMod => melonMod.GetType().Assembly).Distinct();
+#endif
         IEnumerable<ICommandRegistrar> foundCommandRegistrars = assemblies.SelectMany(assembly => assembly.GetTypes())
             .Where(foundCommandRegistrar => typeof(ICommandRegistrar).IsAssignableFrom(foundCommandRegistrar) && !foundCommandRegistrar.IsInterface)
             .Select(commandRegistrarType => (ICommandRegistrar)Activator.CreateInstance(commandRegistrarType)).Where(commandRegistrar =>
@@ -50,7 +58,7 @@ public class CommandHandler : MonoBehaviour {
                 if (argumentType == null)
                     continue;
 
-                if (!TomlTypeConverter.CanConvert(argumentType))
+                if (!CanConvert(argumentType))
                     throw new CommandAddException(command.Name, $"Type {argumentType.Name} has no converter");
             }
         }
@@ -90,13 +98,20 @@ public class CommandHandler : MonoBehaviour {
         // If there are arguments present move them into a new array
         object[] arguments = new object[argumentCount];
         for (int i = 1; i < argumentCount + 1; i++) {
-            if (command.ArgumentTypes[i - 1] == null) {
+            Type argumentType = command.ArgumentTypes[i - 1];
+
+            if (argumentType == null) {
                 arguments[i - 1] = commandStrings[i];
                 continue;
             }
 
             try {
-                arguments[i - 1] = TomlTypeConverter.ConvertToValue(commandStrings[i], command.ArgumentTypes[i - 1]);
+                if (argumentType.IsEnum) {
+                    arguments[i - 1] = Enum.Parse(argumentType, commandStrings[i], true);
+                }
+                else {
+                    arguments[i - 1] = Convert.ChangeType(commandStrings[i], command.ArgumentTypes[i - 1]);
+                }
             }
             catch {
                 messageString = "Incorrect arguments!\nArguments aren't in the correct format.";
@@ -111,4 +126,14 @@ public class CommandHandler : MonoBehaviour {
     }
 
     public IList<Command> GetAllCommands() => [.. _commands.Values];
+
+    private bool CanConvert(Type type) {
+        if (type.IsEnum)
+            return true;
+
+        return type == typeof(string) || type == typeof(bool) || type == typeof(byte) || type == typeof(sbyte) ||
+               type == typeof(short) || type == typeof(ushort) || type == typeof(int) || type == typeof(uint) ||
+               type == typeof(long) || type == typeof(ulong) || type == typeof(float) || type == typeof(double) ||
+               type == typeof(decimal) || type == typeof(char);
+    }
 }
