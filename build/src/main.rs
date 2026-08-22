@@ -30,7 +30,7 @@ fn main() {
 }
 
 fn build_release(root: &Path, project: &str, loader: &str) -> Result<(), String> {
-    let csproj = root.join(project).join(format!("{project}.csproj"));
+    let csproj = root.join(project).join(format!("{}.csproj", project));
 
     let status = Command::new("dotnet")
         .args(["build", csproj.to_str().unwrap(), "-c", loader])
