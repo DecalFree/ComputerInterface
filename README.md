@@ -20,6 +20,7 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 - [Background](#background)
 - [Additional Features](#additional-features)
 - [For Developers](#for-developers)
+- [Release Schedule](#release-schedule)
 - [Disclaimers](#disclaimers)
 
 ## Install
@@ -127,7 +128,7 @@ For example:
 
 ```csharp
 // A selectable entry on the MainMenuView.
-// Entries are automatically detected by ComputerInterface.
+// Entries are automatically detected by Computer Interface.
 public class ExampleViewEntry : IComputerViewEntry {
     // The name of the entry that will be shown.
     public string EntryName => "Example";
@@ -188,6 +189,16 @@ public class ExampleCommandManager : ICommandRegistrar {
 ```
 
 This used a dummy class `ExampleCommandManager`, but of course, you can do this in any type as long as you request the `CommandHandler`.
+
+### Release Schedule
+
+Computer Interface has a very strict release schedule: all releases are tied to official Gorilla Tag updates.
+This prevents any confusion from Another Axiom's bi-weekly updates that could cause the mod to break and require a follow-up patch
+possibly shortly after the last release.
+
+This is a **rule** all current and/or future maintainers **must** follow. As the primary maintainer of Computer Interface,
+I, DecalFree, am putting this rule into place to keep the project stable and out of respect for Another Axiom's
+release cadence.
 
 ## Disclaimers
 
