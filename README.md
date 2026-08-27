@@ -223,11 +223,14 @@ If this process did not work or you're stuck, open an issue with your log file a
 
 This way of debugging is meant for people who are experienced in debugging and/or creating mods. Simply follow the steps below.
 
-Step I - First, make sure you have the right installation for your Mod Loader, whether that be BepInEx or MelonLoader.  
+Step I - First, make sure you have the right installation for your Mod Loader, whether that be BepInEx or MelonLoader.
+
 Step II - Second, locate your log file, for BepInEx this would be in the `BepInEx` folder, and for MelonLoader
-it would be in the `MelonLoader` folder.  
+it would be in the `MelonLoader` folder.
+
 Step III - Look for any errors coming from Computer Interface, if there is none, try looking for possible errors coming from other mods.
-Even simple Harmony errors can be useful, a common error is a mod having both BepInEx and MelonLoader support in one DLL.  
+Even simple Harmony errors can be useful, a common error is a mod having both BepInEx and MelonLoader support in one DLL.
+
 Step IV - Once you've located the culprit mod that the error is coming from, remove it and launch Gorilla Tag. If Computer Interface
 works now, make an issue for the culprit mod.
 
