@@ -10,11 +10,13 @@ internal interface IModLoader {
 
     string ModVersion { get; }
 
-    HarmonyLib.Harmony Harmony { get; }
+    HarmonyLib.Harmony Harmony { get; set; }
 
     Action<object> OnLogMessage { get; }
     Action<object> OnLogWarning { get; }
     Action<object> OnLogError { get; }
+
+    void InitializeHarmony();
 
 #if BEPINEX
     ConfigFile Config { get; }

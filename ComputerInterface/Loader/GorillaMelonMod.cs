@@ -16,16 +16,15 @@ internal class GorillaMelonMod : MelonMod, IModLoader {
 
     public string ModVersion => $"{Info.SemanticVersion.Major}.{Info.SemanticVersion.Minor}.{Info.SemanticVersion.Patch}";
 
-    public new HarmonyLib.Harmony Harmony { get; private set; }
+    public new HarmonyLib.Harmony Harmony { get; set; }
 
     public Action<object> OnLogMessage => LoggerInstance.Msg;
     public Action<object> OnLogWarning => LoggerInstance.Warning;
     public Action<object> OnLogError => LoggerInstance.Error;
 
-    public override void OnInitializeMelon() {
-        PluginCore.InitializeModLoader(this);
-        Harmony = HarmonyInstance;
-    }
+    public void InitializeHarmony() => Harmony = HarmonyInstance;
+
+    public override void OnInitializeMelon() => PluginCore.InitializeModLoader(this);
 }
 
 #endif

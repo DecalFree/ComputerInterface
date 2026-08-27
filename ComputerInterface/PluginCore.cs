@@ -26,6 +26,8 @@ internal static class PluginCore {
         try {
             Logging.Info($"Attempting to load {Constants.Name}");
 
+            CurrentModLoader.InitializeHarmony();
+
 #if BEPINEX
             CIConfig = new CIConfig(CurrentModLoader.Config);
 #elif MELONLOADER
