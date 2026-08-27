@@ -238,7 +238,7 @@ public class Main : MonoBehaviourTick {
             ComputerBackground = monitorAsset.transform.Find("Canvas/RawImage").GetComponent<RawImage>(),
             Color = new Color(0.05f, 0.05f, 0.05f)
         };
-        computerScreenInfo.Text = CurrentComputerView != null ? CurrentComputerView.Text : "CurrentComputerView is null";
+        computerScreenInfo.Text = CurrentComputerView != null ? CurrentComputerView.Text : Constants.NullViewText;
         computerScreenInfo.Color = _ciConfig.ScreenBackgroundColor.Value;
         computerScreenInfo.BackgroundTexture = _ciConfig.BackgroundTexture;
         _computerScreenInfos.Add(computerScreenInfo);

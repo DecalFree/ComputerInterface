@@ -15,13 +15,24 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 
 ## Table of Contents
 
+- [Release Schedule](#release-schedule)
 - [Install](#install)
 - [Command Line](#command-line)
 - [Background](#background)
 - [Additional Features](#additional-features)
 - [For Developers](#for-developers)
-- [Release Schedule](#release-schedule)
+- [Troubleshooting](#troubleshooting)
 - [Disclaimers](#disclaimers)
+
+## Release Schedule
+
+Computer Interface has a very strict release schedule: all releases are tied to official Gorilla Tag updates.
+This prevents any confusion from Another Axiom's bi-weekly updates that could cause the mod to break and require a follow-up patch
+possibly shortly after the last release.
+
+This is a **rule** all current and/or future maintainers **must** follow. As the primary maintainer of Computer Interface,
+I, DecalFree, am putting this rule into place to keep the project stable and out of respect for Another Axiom's
+release cadence.
 
 ## Install
 
@@ -190,15 +201,37 @@ public class ExampleCommandManager : ICommandRegistrar {
 
 This used a dummy class `ExampleCommandManager`, but of course, you can do this in any type as long as you request the `CommandHandler`.
 
-### Release Schedule
+## Troubleshooting
 
-Computer Interface has a very strict release schedule: all releases are tied to official Gorilla Tag updates.
-This prevents any confusion from Another Axiom's bi-weekly updates that could cause the mod to break and require a follow-up patch
-possibly shortly after the last release.
+Before making an Issue about Computer Interface being broken, it is recommended to try one of the following steps below
+to possibly find the cause of the issue.
 
-This is a **rule** all current and/or future maintainers **must** follow. As the primary maintainer of Computer Interface,
-I, DecalFree, am putting this rule into place to keep the project stable and out of respect for Another Axiom's
-release cadence.
+Please note that most times when Computer Interface "breaks," it isn't the mod's fault, it's usually another mod's fault. If it is the case
+of another mod breaking Computer Interface, it's recommended to make an issue for the culprit mod.
+
+### Deleting Mods One By One
+
+This way of debugging can seem pretty annoying, but if you're not experienced in debugging and/or creating mods, this has been the best
+way I've seen.
+
+Simply locate the folder where all your mods lie, then delete one and launch Gorilla Tag. Repeat this process until the
+culprit is found. Once you re-add all your mods and Computer Interface breaks once again, simply repeat the process.
+
+If this process did not work or you're stuck, open an issue with your log file attached.
+
+### Manually Finding The Issue
+
+This way of debugging is meant for people who are experienced in debugging and/or creating mods. Simply follow the steps below.
+
+Step I - First, make sure you have the right installation for your Mod Loader, whether that be BepInEx or MelonLoader.  
+Step II - Second, locate your log file, for BepInEx this would be in the `BepInEx` folder, and for MelonLoader
+it would be in the `MelonLoader` folder.  
+Step III - Look for any errors coming from Computer Interface, if there is none, try looking for possible errors coming from other mods.
+Even simple Harmony errors can be useful, a common error is a mod having both BepInEx and MelonLoader support in one DLL.  
+Step IV - Once you've located the culprit mod that the error is coming from, remove it and launch Gorilla Tag. If Computer Interface
+works now, make an issue for the culprit mod.
+
+If this process did not work or you're stuck, open an issue with your log file attached.
 
 ## Disclaimers
 
