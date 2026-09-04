@@ -45,7 +45,7 @@ public static class GameInterfaceService {
     }
 
     public static (bool isSuccessful, string failureMessage) JoinSession(string sessionName) {
-        if ((!IsPeerInVirtualStump && sessionName == "") || (IsPeerInVirtualStump && sessionName.Length == 1))
+        if ((!IsPeerInVirtualStump && sessionName == "") || (IsPeerInVirtualStump && sessionName.Length < Computer.VStumpRoomFullPrepend.Length))
             return (false, "Input is Empty");
 
         if (sessionName.Length > Constants.MaxSessionNameLength)
@@ -60,7 +60,7 @@ public static class GameInterfaceService {
         if (IsPeerInVirtualStump)
             CustomMapManager.UnloadMap(false);
 
-        PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(IsPeerInVirtualStump ? Computer.VStumpRoomPrepend + sessionName : sessionName,
+        PhotonNetworkController.Instance.AttemptToJoinSpecificRoom(IsPeerInVirtualStump ? Computer.VStumpRoomFullPrepend + sessionName : sessionName,
             IsPeerInParty ? JoinType.JoinWithParty : JoinType.Solo);
 
         return (true, null);
