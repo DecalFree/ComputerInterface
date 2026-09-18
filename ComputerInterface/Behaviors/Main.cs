@@ -337,14 +337,14 @@ public class Main : MonoBehaviourTick {
         if (name!.Contains("enter"))
             name = "enter";
 
-        // Forest
-        Transform t = button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(name);
+        // Properly designed maps
+        Transform t = button.transform.parent?.parent?.Find($"Text/{name}");
 
         // Custom Maps
         t ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{name}");
 
-        // Other Maps
-        t ??= button.transform.parent?.parent?.Find($"Text/{name}");
+        // Forest
+        t??= button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(name);
 
         return t?.GetComponent<TextMeshPro>();
     }
