@@ -18,7 +18,7 @@ internal class QueueView : ComputerView {
     ];
 
     private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down) {
-        MaxIndex = Queues.Count
+        MaxIndex = Queues.Count - 1
     };
 
     public QueueView() => _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");

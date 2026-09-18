@@ -189,6 +189,9 @@ public static class GameInterfaceService {
     #region Queue Services
 
     private static void JoinQueue(string queueName, bool isTroopQueue = false) {
+        if (queueName == "COMPETITIVE" && !IsPeerAllowedInCompetitive)
+            return;
+
         Computer.currentQueue = queueName;
         TroopQueueActive = isTroopQueue;
         TroopPopulation = -1;
