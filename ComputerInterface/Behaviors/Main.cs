@@ -247,7 +247,7 @@ public class Main : MonoBehaviourTick {
         computerTerminal.myFunctionText?.gameObject.SetActive(false);
         computerTerminal.myScreenText?.gameObject.SetActive(false);
 
-        // Let 'activeZones' in ZoneManagement catch up. -DecalFree
+        // Computer Interface now loads too quickly, so we wait 3 milliseconds for the game itself to catch up. -DecalFree
         await Task.Delay(3);
 
         InitializeKeyboard(computerTerminal);
@@ -272,7 +272,7 @@ public class Main : MonoBehaviourTick {
             if (button.characterString is "up" or "down") {
                 button.GetComponentInChildren<MeshRenderer>(true).material.color = new Color(0.1f, 0.1f, 0.1f);
                 button.GetComponentInChildren<MeshFilter>().mesh = _cubeMesh;
-                button.transform.localPosition -= new Vector3(0, 0.6f, 0);
+                button.transform.localPosition -= new Vector3(0f, 0.6f, 0f);
                 DestroyImmediate(button.GetComponent<BoxCollider>());
                 if (FindText(button.gameObject, button.name + "text")?.GetComponent<TextMeshPro>() is { } arrowBtnText)
                     DestroyImmediate(arrowBtnText);
@@ -307,23 +307,23 @@ public class Main : MonoBehaviourTick {
         CustomKeyboardButton mKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.M);
         CustomKeyboardButton deleteKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.Delete);
 
-        CreateKeyboardButton(enterKey.gameObject, "Space", new Vector3(2.6f, 0, 3), EKeyboardButton.Space, "SPACE");
-        CreateKeyboardButton(deleteKey.gameObject, "Back", new Vector3(0, 0, -29.8f), EKeyboardButton.Back, "BACK", ColorUtility.TryParseHtmlString("#8787e0", out Color backButtonColor) ? backButtonColor : Color.white);
+        CreateKeyboardButton(enterKey.gameObject, "Space", new Vector3(2.6f, 0f, 3f), EKeyboardButton.Space, "SPACE");
+        CreateKeyboardButton(deleteKey.gameObject, "Back", new Vector3(0f, 0f, -29.8f), EKeyboardButton.Back, "BACK", ColorUtility.TryParseHtmlString("#8787e0", out Color backButtonColor) ? backButtonColor : Color.white);
 
         bool arrowColorExists = ColorUtility.TryParseHtmlString("#abdbab", out Color arrowKeyButtonColor);
 
-        CustomKeyboardButton leftKey = CreateKeyboardButton(mKey.gameObject, "Left", new Vector3(0, 0, 5.6f), EKeyboardButton.Left, "<", arrowColorExists ? arrowKeyButtonColor : Color.white);
-        CustomKeyboardButton downKey = CreateKeyboardButton(leftKey.gameObject, "Down", new Vector3(0, 0, 2.3f), EKeyboardButton.Down, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
-        CreateKeyboardButton(downKey.gameObject, "Right", new Vector3(0, 0, 2.3f), EKeyboardButton.Right, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
-        CustomKeyboardButton upKey = CreateKeyboardButton(downKey.gameObject, "Up", new Vector3(-2.3f, 0, 0), EKeyboardButton.Up, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
+        CustomKeyboardButton leftKey = CreateKeyboardButton(mKey.gameObject, "Left", new Vector3(0f, 0f, 5.6f), EKeyboardButton.Left, "<", arrowColorExists ? arrowKeyButtonColor : Color.white);
+        CustomKeyboardButton downKey = CreateKeyboardButton(leftKey.gameObject, "Down", new Vector3(0f, 0f, 2.3f), EKeyboardButton.Down, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
+        CreateKeyboardButton(downKey.gameObject, "Right", new Vector3(0f, 0f, 2.3f), EKeyboardButton.Right, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
+        CustomKeyboardButton upKey = CreateKeyboardButton(downKey.gameObject, "Up", new Vector3(-2.3f, 0f, 0f), EKeyboardButton.Up, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
 
         Transform downKeyText = FindText(downKey.gameObject).transform;
-        downKeyText.localPosition -= new Vector3(0, 0, 0.05f);
-        downKeyText.localEulerAngles += new Vector3(0, 0, -90);
+        downKeyText.localPosition -= new Vector3(0f, 0f, 0.05f);
+        downKeyText.localEulerAngles += new Vector3(0f, 0f, -90f);
 
         Transform upKeyText = FindText(upKey.gameObject).transform;
-        upKeyText.localPosition += new Vector3(0, 0, 0.05f);
-        upKeyText.localEulerAngles += new Vector3(0, 0, 90);
+        upKeyText.localPosition += new Vector3(0f, 0f, 0.05f);
+        upKeyText.localEulerAngles += new Vector3(0f, 0f, 90f);
     }
 
     private static TextMeshPro FindText(GameObject button, string name = null) {

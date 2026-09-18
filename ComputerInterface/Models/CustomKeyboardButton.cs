@@ -44,9 +44,9 @@ public class CustomKeyboardButton : GorillaTriggerBox {
     public void InitializeCustomButton(EKeyboardButton keyboardButton, TextMeshPro keyboardTextMesh, string text) {
         InitializeCustomButton(keyboardButton, keyboardTextMesh);
 
-        Component localizedText = keyboardTextMesh.transform.GetComponent(nameof(LocalizedText));
-        if (localizedText != null)
-            Destroy(localizedText);
+        Component localizedTextComponent = keyboardTextMesh.transform.GetComponent(nameof(LocalizedText));
+        if (localizedTextComponent != null)
+            Destroy(localizedTextComponent);
 
         if (keyboardTextMesh != null)
             keyboardTextMesh.text = text;
