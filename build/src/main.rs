@@ -67,14 +67,23 @@ fn zip_release(root: &Path, loader: &str) -> Result<PathBuf, String> {
             .join(loader)
             .join("netstandard2.1")
             .join(format!("{}.dll", project));
-        let bytes = fs::read(&dll_path).map_err(|error| format!("{}", error))?;
+        let dll_bytes = fs::read(&dll_path).map_err(|error| format!("{}", error))?;
 
-        let entry_name = format!("{}/{}.{}.dll", subfolder, project, loader);
-        zip.start_file(&entry_name, options)
+        let dll_entry_name = format!("{}/{}.{}.dll", subfolder, project, loader);
+        zip.start_file(&dll_entry_name, options)
             .map_err(|error| format!("{}", error))?;
-        zip.write_all(&bytes)
+        zip.write_all(&dll_bytes)
             .map_err(|error| format!("{}", error))?;
     }
+
+    let background_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets").join("background.png");
+    let background_bytes = fs::read(&background_path).map_err(|error| format!("{}", error))?;
+
+    let background_entry_name = format!("{}/background.png", subfolder);
+    zip.start_file(&background_entry_name, options)
+        .map_err(|error| format!("{}", error))?;
+    zip.write_all(&background_bytes)
+        .map_err(|error| format!("{}", error))?;
 
     zip.finish().map_err(|error| format!("{}", error))?;
     Ok(zip_path)
