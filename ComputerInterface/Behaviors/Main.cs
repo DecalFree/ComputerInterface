@@ -326,25 +326,25 @@ public class Main : MonoBehaviourTick {
         upKeyText.localEulerAngles += new Vector3(0f, 0f, 90f);
     }
 
-    private static TextMeshPro FindText(GameObject button, string name = null) {
+    private TextMeshPro FindText(GameObject button, string keyName = null) {
         // Logging.Info($"Replacing key {button.name} / {name}");
         if (button.GetComponent<TextMeshPro>() is { } text)
             return text;
 
-        if (name.IsNullOrWhiteSpace())
-            name = button.name.Replace(" ", "");
+        if (keyName.IsNullOrWhiteSpace())
+            keyName = button.name.Replace(" ", "");
 
-        if (name!.Contains("enter"))
-            name = "enter";
+        if (keyName!.Contains("enter"))
+            keyName = "enter";
 
         // Properly designed maps
-        Transform t = button.transform.parent?.parent?.Find($"Text/{name}");
+        Transform t = button.transform.parent?.parent?.Find($"Text/{keyName}");
 
         // Custom Maps
-        t ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{name}");
+        t ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{keyName}");
 
         // Forest
-        t??= button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(name);
+        t??= button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(keyName);
 
         return t?.GetComponent<TextMeshPro>();
     }

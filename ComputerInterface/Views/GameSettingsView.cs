@@ -28,7 +28,6 @@ public class GameSettingsView : ComputerView {
     private readonly List<Tuple<string, Type>> _gameSettingViews = [
         new("Room      ", typeof(SessionView)),
         new("Name      ", typeof(NameSettingView)),
-        // new("Language  ", typeof(LanguageView)),
         new("Color     ", typeof(ColorSettingView)),
         new("Turn      ", typeof(TurnSettingView)),
         new("Microphone", typeof(MicrophoneSettingView)),
