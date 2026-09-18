@@ -135,13 +135,6 @@ public static class GameInterfaceService {
 
     #endregion
 
-    // TODO
-    #region Language Services
-
-
-
-    #endregion
-
     #region Turn Services
 
     public static ETurnType TurnType {
