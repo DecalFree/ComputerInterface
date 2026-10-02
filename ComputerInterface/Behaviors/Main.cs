@@ -378,12 +378,10 @@ public class Main : MonoBehaviourTick {
     }
 
     internal async void SwitchComputerView(Type sourceView, Type destinationView, object[] arguments) {
-        if (sourceView == destinationView)
+        if (sourceView == destinationView || destinationView == null)
             return;
 
         ComputerView newDestinationView = GetOrCreateComputerView(destinationView);
-        if (destinationView == null)
-            return;
         newDestinationView.CallerComputerView = sourceView;
 
         CurrentComputerView = newDestinationView;

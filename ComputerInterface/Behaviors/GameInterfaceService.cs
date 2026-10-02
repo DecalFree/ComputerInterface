@@ -333,7 +333,7 @@ public static class GameInterfaceService {
 
             Computer.autoMuteType = autoMuteType;
 
-            PlayerPrefs.SetInt("autoMuteType", (int)value);
+            PlayerPrefs.SetInt("autoMute", (int)value);
             PlayerPrefs.Save();
 
             RigContainer.RefreshAllRigVoices();
