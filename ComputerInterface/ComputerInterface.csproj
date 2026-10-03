@@ -50,6 +50,9 @@
         <Reference Include="Fusion.Runtime">
           <HintPath>$(GameAssemblyPath)/Fusion.Runtime.dll</HintPath>
         </Reference>
+        <Reference Include="Newtonsoft.Json">
+          <HintPath>$(GameAssemblyPath)/Newtonsoft.Json.dll</HintPath>
+        </Reference>
         <Reference Include="PhotonUnityNetworking">
           <HintPath>$(GameAssemblyPath)/PhotonUnityNetworking.dll</HintPath>
         </Reference>

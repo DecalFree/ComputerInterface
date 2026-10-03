@@ -12,11 +12,13 @@ using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.Models;
+using ComputerInterface.Models.Response;
 using ComputerInterface.Tools;
 using ComputerInterface.Views;
 using GorillaExtensions;
 using GorillaNetworking;
 using HarmonyLib;
+using Newtonsoft.Json;
 #if MELONLOADER
 using MelonLoader;
 #endif
@@ -191,19 +193,23 @@ public class Main : MonoBehaviourTick {
             if (!Version.TryParse(PluginCore.CurrentModLoader.ModVersion, out Version currentVersion))
                 return;
 
-            using HttpRequestMessage request = new(HttpMethod.Get, "https://raw.githubusercontent.com/DecalFree/ComputerInterface/main/Version.txt");
+            using HttpRequestMessage request = new(HttpMethod.Get, $"{Constants.APIEndpoint}/plugins");
 
             using HttpResponseMessage response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            string latestVersionRaw = (await response.Content.ReadAsStringAsync()).Trim();
-            if (!Version.TryParse(latestVersionRaw, out Version latestVersion))
+            string json = await response.Content.ReadAsStringAsync();
+
+            List<PluginResponse> plugins = JsonConvert.DeserializeObject<List<PluginResponse>>(json) ?? [];
+            PluginResponse computerInterface = plugins.Find(plugin => plugin.PluginGuid == Constants.Guid);
+
+            if (!Version.TryParse(computerInterface.PluginVersion, out Version latestVersion))
                 return;
 
             Logging.Info($"Using Computer Interface v{PluginCore.CurrentModLoader.ModVersion} | Latest: {latestVersion}");
 
             if (latestVersion > currentVersion)
-                SwitchComputerView(_warningView, [ new WarningView.GeneralWarning($"Computer Interface version {latestVersion} is now available!\nIt is recommended to update to avoid any issues.") ]);
+                SwitchComputerView(_warningView, [ new WarningView.GeneralWarning($"Computer Interface version {latestVersion} is now available!\n\nUpdate Type: {computerInterface.ExtraData["update_type"]}") ]);
         }
         catch (Exception exception) {
             Logging.Error($"Computer Interface failed to check its version: {exception.Message}");

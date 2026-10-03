@@ -16,4 +16,6 @@ internal class Constants {
     public const float KeyboardButtonBumpAmount = 0.2f;
 
     public const string NullViewText = "CurrentComputerView is null.\n\nPlease refer to the Troubleshooting section in the README at: github.com/DecalFree/ComputerInterface";
+
+    public const string APIEndpoint = "https://api.decalfree.com";
 }
