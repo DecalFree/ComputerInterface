@@ -181,25 +181,33 @@ public class Main : MonoBehaviourTick {
         if (!_ciConfig.AcknowledgedSafetyWarning.Value)
             SwitchComputerView(_safetyWarningView, null);
 
+        Logging.Info("Successfully ended initializing Computer Interface");
+
+        _ = CheckForUpdates();
+    }
+
+    private async Task CheckForUpdates() {
         try {
+            if (!Version.TryParse(PluginCore.CurrentModLoader.ModVersion, out Version currentVersion))
+                return;
+
             using HttpRequestMessage request = new(HttpMethod.Get, "https://raw.githubusercontent.com/DecalFree/ComputerInterface/main/Version.txt");
 
             using HttpResponseMessage response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             string latestVersionRaw = (await response.Content.ReadAsStringAsync()).Trim();
-            if (Version.TryParse(latestVersionRaw, out Version latestVersion)) {
-                Logging.Info($"Using Computer Interface v{PluginCore.CurrentModLoader.ModVersion} | Latest: {latestVersion}");
+            if (!Version.TryParse(latestVersionRaw, out Version latestVersion))
+                return;
 
-                if (latestVersion > Version.Parse(PluginCore.CurrentModLoader.ModVersion))
-                    SwitchComputerView(_warningView, [ new WarningView.GeneralWarning($"Computer Interface version {latestVersion} is now available!\nIt is recommended to update to avoid any issues.") ]);
-            }
+            Logging.Info($"Using Computer Interface v{PluginCore.CurrentModLoader.ModVersion} | Latest: {latestVersion}");
+
+            if (latestVersion > currentVersion)
+                SwitchComputerView(_warningView, [ new WarningView.GeneralWarning($"Computer Interface version {latestVersion} is now available!\nIt is recommended to update to avoid any issues.") ]);
         }
         catch (Exception exception) {
-            Logging.Error($"Computer Interface failed to check the its version: {exception.Message}");
+            Logging.Error($"Computer Interface failed to check its version: {exception.Message}");
         }
-
-        Logging.Info("Successfully ended initializing Computer Interface");
     }
 
     public override void Tick() {
