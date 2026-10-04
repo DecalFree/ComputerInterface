@@ -174,7 +174,7 @@ public static class GameInterfaceService {
             string microphoneType = value switch {
                 EMicrophoneType.OpenMicrophone => "OPEN MIC",
                 EMicrophoneType.PushToTalk => "PUSH TO TALK",
-                EMicrophoneType.PushToMute => "PUSH  TO MUTE",
+                EMicrophoneType.PushToMute => "PUSH TO MUTE",
                 _ => throw new ArgumentOutOfRangeException()
             };
 

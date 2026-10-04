@@ -17,7 +17,6 @@ using ComputerInterface.Tools;
 using ComputerInterface.Views;
 using GorillaExtensions;
 using GorillaNetworking;
-using HarmonyLib;
 using Newtonsoft.Json;
 #if MELONLOADER
 using MelonLoader;
@@ -297,17 +296,17 @@ public class Main : MonoBehaviourTick {
             if (!nameToEnum.TryGetValue(button.characterString.ToLower(), out EKeyboardButton keyboardButton))
                 continue;
 
-            if (FindText(button.gameObject) is { } buttonTextMesh) {
-                CustomKeyboardButton customButton = button.gameObject.AddComponent<CustomKeyboardButton>();
-                customButton.pressTime = Traverse.Create(computerTerminal.GetComponentsInChildren<GorillaKeyboardButton>()).Field("pressTime").GetValue<float>();
-                customButton.isFunctionKey = button.functionKey;
+            if (FindText(button.gameObject) is not { } buttonTextMesh)
+                continue;
+            CustomKeyboardButton customButton = button.gameObject.AddComponent<CustomKeyboardButton>();
+            customButton.pressTime = button.GetField<float>("pressTime");
+            customButton.isFunctionKey = button.functionKey;
 
-                button.GetComponent<MeshFilter>().mesh = _cubeMesh;
-                DestroyImmediate(button);
+            button.GetComponent<MeshFilter>().mesh = _cubeMesh;
+            DestroyImmediate(button);
 
-                customButton.InitializeCustomButton(keyboardButton, buttonTextMesh);
-                _keyboardButtons.Add(customButton);
-            }
+            customButton.InitializeCustomButton(keyboardButton, buttonTextMesh);
+            _keyboardButtons.Add(customButton);
         }
 
         MeshRenderer keyboardRenderer = _keyboardButtons[0].transform.parent?.parent?.parent?.GetComponent<MeshRenderer>();
@@ -352,15 +351,15 @@ public class Main : MonoBehaviourTick {
             keyName = "enter";
 
         // Properly designed maps
-        Transform t = button.transform.parent?.parent?.Find($"Text/{keyName}");
+        Transform keyTextTransform = button.transform.parent?.parent?.Find($"Text/{keyName}");
 
         // Custom Maps
-        t ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{keyName}");
+        keyTextTransform ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{keyName}");
 
         // Forest
-        t??= button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(keyName);
+        keyTextTransform??= button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(keyName);
 
-        return t?.GetComponent<TextMeshPro>();
+        return keyTextTransform?.GetComponent<TextMeshPro>();
     }
 
     private CustomKeyboardButton CreateKeyboardButton(GameObject prefab, string objectName, Vector3 offset, EKeyboardButton keyboardButton, string label = null, Color? color = null) {
