@@ -55,7 +55,7 @@ internal class NameSettingView : ComputerView {
         switch (pressedButton) {
             case EKeyboardButton.Enter:
                 if (GameInterfaceService.Nametags) {
-                    (bool isSuccessful, string failureMessage) setPeerName = GameInterfaceService.SetPeerName(_textInputHandler.Text);
+                    (bool _, string failureMessage) setPeerName = GameInterfaceService.SetPeerName(_textInputHandler.Text);
                     _failureMessage = setPeerName.failureMessage;
                     UpdateViewScreen();
                 }

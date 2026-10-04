@@ -13,6 +13,10 @@ internal class SessionView : ComputerView {
 
     private GameObject _callbacksObject;
 
+    private bool ShowFailureMessage => !_isSuccessful && _failureMessage != null;
+    private bool _isSuccessful;
+    private string _failureMessage;
+
     private string _joinedSession;
     private string _statusLabel;
 
@@ -74,6 +78,9 @@ internal class SessionView : ComputerView {
             _statusLabel = text != "None" ? text : _statusLabel;
             text = text == "None" ? _statusLabel : text;
 
+            if (ShowFailureMessage)
+                text = _failureMessage;
+
             stringBuilder.AppendClr(text, "ffffff50").AppendLine();
         }
 
@@ -97,7 +104,9 @@ internal class SessionView : ComputerView {
                 _joinedSession = _textInputHandler.Text.ToUpper();
                 GameInterfaceService.Computer.roomFull = false;
                 GameInterfaceService.Computer.roomNotAllowed = false;
-                GameInterfaceService.JoinSession(_joinedSession);
+                (bool isSuccessful, string failureMessage) joinSession = GameInterfaceService.JoinSession(_joinedSession);
+                _isSuccessful = joinSession.isSuccessful;
+                _failureMessage = joinSession.failureMessage;
                 UpdateViewScreen();
                 break;
             case EKeyboardButton.Option1:

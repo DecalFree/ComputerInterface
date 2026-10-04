@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ComputerInterface.Enumerations;
@@ -51,6 +52,9 @@ public static class GameInterfaceService {
         if (sessionName.Length > Constants.MaxSessionNameLength)
             return (false, "Input Exceeds Character Limit");
 
+        if (sessionName.Any(char.IsWhiteSpace))
+            return (false, "Input is Invalid");
+
         if (!IsNameAllowed(sessionName))
             return (false, "Input is Inappropriate");
 
@@ -80,6 +84,9 @@ public static class GameInterfaceService {
 
         if (newPeerName.Length > Constants.MaxPeerNameLength)
             return (false, "Input Exceeds Character Limit");
+
+        if (newPeerName.Any(char.IsWhiteSpace))
+            return (false, "Input is Invalid");
 
         if (!IsNameAllowed(newPeerName))
             return (false, "Input is Inappropriate");
@@ -266,11 +273,11 @@ public static class GameInterfaceService {
         if (newTroopName.Length > Constants.MaxPeerNameLength)
             return (false, "Input Exceeds Character Limit");
 
+        if (newTroopName.Any(char.IsWhiteSpace) || !IsValidTroopName(newTroopName))
+            return (false, "Input is Invalid");
+
         if (!IsNameAllowed(newTroopName))
             return (false, "Input is Inappropriate");
-
-        if (!IsValidTroopName(newTroopName))
-            return (false, "Input is Invalid");
 
         TroopPopulation = -1;
         TroopName = newTroopName;
