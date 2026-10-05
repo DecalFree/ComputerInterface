@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 #if BEPINEX
@@ -193,6 +194,8 @@ public class Main : MonoBehaviourTick {
                 return;
 
             using HttpRequestMessage request = new(HttpMethod.Get, $"{Constants.APIEndpoint}/plugins");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Headers.Add("User-Agent", $"Computer Interface {PluginCore.CurrentModLoader.ModVersion} (Caller: {GetType().Assembly.GetName().Name})");
 
             using HttpResponseMessage response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
