@@ -1,15 +1,12 @@
 ﻿using System.Text;
 using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
+using ComputerInterface.Interfaces;
 using ComputerInterface.Models;
 
-namespace ComputerInterface.Views;
+namespace ComputerInterface.Views.Warnings;
 
 internal class WarningView : ComputerView {
-    private interface IWarning {
-        string WarningMessage { get; }
-    }
-
     private static IWarning _currentWarning;
 
     public override void OnViewShown(object[] arguments) => _currentWarning = arguments[0] as IWarning;

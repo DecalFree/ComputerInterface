@@ -3,7 +3,7 @@ using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
 using ComputerInterface.Models;
 
-namespace ComputerInterface.Views;
+namespace ComputerInterface.Views.Warnings;
 
 internal class SafetyWarningView : ComputerView {
     protected override string GetViewText() {

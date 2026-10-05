@@ -16,6 +16,7 @@ using ComputerInterface.Models;
 using ComputerInterface.Models.Response;
 using ComputerInterface.Tools;
 using ComputerInterface.Views;
+using ComputerInterface.Views.Warnings;
 using GorillaExtensions;
 using GorillaNetworking;
 using Newtonsoft.Json;
@@ -270,6 +271,7 @@ public class Main : MonoBehaviourTick {
         OnCustomTerminalPrepared?.Invoke(computerTerminal);
     }
 
+    // TODO: Fix some text not appearing on certain keys. This seems to be a positioning issue caused by the game itself.
     private void InitializeKeyboard(GorillaComputerTerminal computerTerminal) {
         _keyboardButtons = [];
 
