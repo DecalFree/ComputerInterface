@@ -13,7 +13,7 @@ internal class SafetyWarningView : ComputerView {
         stringBuilder.Append("Safety Warning").BeginColor("ffffff50").Append(" ==").EndColor().AppendLines(2);
 
         stringBuilder.Append("There have been recent CI fixes that have things like Console in them.").AppendLines(2);
-        stringBuilder.AppendLine("The only safe place to get CI is at github.com/DecalFree/ComputerInterface, or through trusted Mod Managers recommended by the GTMG.");
+        stringBuilder.AppendLine("The only safe place to get CI is at github.com/DecalFree/ComputerInterface, monkeforge.org/view/computerinterface, or through trusted Mod Managers recommended by the GTMG.");
 
         stringBuilder.AppendLines(2).AppendClr("* Press Enter to acknowledge that you understand these safety concerns.", "ffffff50").AppendLine();
 
