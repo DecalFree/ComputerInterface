@@ -2,7 +2,7 @@
 
 namespace ComputerInterface.Extensions;
 
-public static class CustomButtonExtensions {
+public static class CustomKeyboardButtonExtensions {
     extension(EKeyboardButton keyboardButton) {
         public bool IsFunctionKey() {
             uint index = (uint)keyboardButton;
