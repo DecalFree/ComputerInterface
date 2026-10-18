@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ComputerInterface.Commands;
 
-public class CommandRegistrar : ICommandRegistrar {
+internal class CommandRegistrar : ICommandRegistrar {
     private CommandHandler _commandHandler;
 
     public void Initialize() {
@@ -38,9 +38,12 @@ public class CommandRegistrar : ICommandRegistrar {
             float g = (float)arguments[1];
             float b = (float)arguments[2];
 
-            if (r > 0) r /= 255;
-            if (g > 0) g /= 255;
-            if (b > 0) b /= 255;
+            if (r > 0)
+                r /= 255;
+            if (g > 0)
+                g /= 255;
+            if (b > 0)
+                b /= 255;
 
             Main.Singleton.SetBackgroundColor(r, g, b);
 

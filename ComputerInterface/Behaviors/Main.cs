@@ -34,10 +34,11 @@ public class Main : MonoBehaviourTick {
     public static Main Singleton { get; private set; }
     private bool _initialized;
 
+    private GameObject _classicMonitorScreen;
     private GameObject _betterComputerAsset;
     private AudioClip _clickSound;
 
-    private readonly List<GorillaComputerTerminal> _initializedTerminals = [];
+    private readonly HashSet<GorillaComputerTerminal> _initializedTerminals = [];
 
     private readonly Dictionary<Type, ComputerView> _cachedComputerViews = [];
     internal ComputerView CurrentComputerView { get; private set; }
@@ -101,6 +102,7 @@ public class Main : MonoBehaviourTick {
             GameInterfaceService.Computer.InvokeMethod("Initialise");
         GameInterfaceService.Computer.enabled = false;
 
+        _classicMonitorScreen = await AssetLoader.LoadAsset<GameObject>("Classic Monitor Screen");
         _betterComputerAsset = await AssetLoader.LoadAsset<GameObject>("Better Computer");
         _clickSound = await AssetLoader.LoadAsset<AudioClip>("ClickSound");
 
@@ -237,13 +239,12 @@ public class Main : MonoBehaviourTick {
     }
 
     public async void PrepareCustomTerminal(GorillaComputerTerminal computerTerminal) {
-        if (_initializedTerminals.Contains(computerTerminal))
+        if (!_initializedTerminals.Add(computerTerminal))
             return;
-        _initializedTerminals.Add(computerTerminal);
 
         Transform computerTerminalScreen = computerTerminal.monitorMesh?.transform ?? computerTerminal.transform.Find("ComputerUI/monitor");
 
-        GameObject monitorAsset = Instantiate(await AssetLoader.LoadAsset<GameObject>("Classic Monitor Screen"), computerTerminalScreen, true);
+        GameObject monitorAsset = Instantiate(_classicMonitorScreen, computerTerminalScreen, true);
         monitorAsset.name = $"Computer Interface (Scene - {computerTerminal.gameObject.scene.name})";
         monitorAsset.transform.localPosition = new Vector3(-0.0787f + 0.082f, -0.12f - 0.2f, 0.5344f - 0.02f + 0.003f);
         monitorAsset.transform.localEulerAngles = Vector3.right * 85f;
@@ -253,9 +254,9 @@ public class Main : MonoBehaviourTick {
         ComputerScreenInfo computerScreenInfo = new() {
             ComputerText = monitorAsset.transform.Find("Canvas/Text (TMP)").GetComponent<TextMeshProUGUI>(),
             ComputerBackground = monitorAsset.transform.Find("Canvas/RawImage").GetComponent<RawImage>(),
-            Color = new Color(0.05f, 0.05f, 0.05f)
+            Color = new Color(0.05f, 0.05f, 0.05f),
+            Text = CurrentComputerView != null ? CurrentComputerView.Text : Constants.NullViewText
         };
-        computerScreenInfo.Text = CurrentComputerView != null ? CurrentComputerView.Text : Constants.NullViewText;
         computerScreenInfo.Color = _ciConfig.ScreenBackgroundColor.Value;
         computerScreenInfo.BackgroundTexture = _ciConfig.BackgroundTexture;
         _computerScreenInfos.Add(computerScreenInfo);
@@ -413,9 +414,9 @@ public class Main : MonoBehaviourTick {
         }
     }
 
-    internal void SwitchComputerView(ComputerView computerView, object[] arguments) => SwitchComputerView(null, computerView.GetType(), arguments);
+    private void SwitchComputerView(ComputerView computerView, object[] arguments) => SwitchComputerView(null, computerView.GetType(), arguments);
 
-    internal ComputerView GetOrCreateComputerView(Type type) {
+    private ComputerView GetOrCreateComputerView(Type type) {
         if (_cachedComputerViews.TryGetValue(type, out ComputerView computerView))
             return computerView;
 
