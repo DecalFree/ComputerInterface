@@ -13,6 +13,16 @@ Main project contributors:
 
 You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord.gg/monkemod).
 
+## Long Term Support
+
+Computer Interface has entered **Long Term Support (LTS)**.
+
+Moving forward, development will focus on maintaining stability, addressing bugs, and implementing minor improvements
+or features where appropriate. Major features and large-scale changes are not currently planned.
+
+The existing release schedule will remain in effect. However, please note that while maintenance and
+minor improvements may continue, new releases are not guaranteed.
+
 ## Table of Contents
 
 - [Release Schedule](#release-schedule)
