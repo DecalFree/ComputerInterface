@@ -15,7 +15,7 @@ You can find all of us on the [Gorilla Tag Modding Group Discord](http://discord
 
 ## Long Term Support
 
-Computer Interface has entered **Long Term Support (LTS)**.
+As of October 19, 2026, Computer Interface has entered **Long Term Support (LTS)**.
 
 Moving forward, development will focus on maintaining stability, addressing bugs, and implementing minor improvements
 or features where appropriate. Major features and large-scale changes are not currently planned.
