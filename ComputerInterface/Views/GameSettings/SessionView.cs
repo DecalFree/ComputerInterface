@@ -34,6 +34,7 @@ internal class SessionView : ComputerView {
         Object.DontDestroyOnLoad(_callbacksObject);
 
         // I genuinely doubt Fusion will be used in the future, so I'll just keep it like this for now. -DecalFree
+        // As of October 30, 2026, Fusion is no longer in Gorilla Tag. -DecalFree
         if (NetworkSystem.Instance.GetComponent<NetworkSystemPUN>()) {
             SV_PunCallbacks callbacksComponent = _callbacksObject.AddComponent<SV_PunCallbacks>();
             callbacksComponent.SessionView = this;

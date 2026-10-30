@@ -272,7 +272,7 @@ public class Main : MonoBehaviourTick {
         OnCustomTerminalPrepared?.Invoke(computerTerminal);
     }
 
-    // TODO: Fix some text not appearing on certain keys. This seems to be a positioning issue caused by the game itself.
+    // TODO: Fix some text not appearing on certain keys. This seems to be a positioning issue caused by the game itself. -DecalFree
     private void InitializeKeyboard(GorillaComputerTerminal computerTerminal) {
         _keyboardButtons = [];
 

@@ -47,9 +47,6 @@
         <Reference Include="Assembly-CSharp">
             <HintPath>$(GameAssemblyPath)/Assembly-CSharp.dll</HintPath>
         </Reference>
-        <Reference Include="Fusion.Runtime">
-          <HintPath>$(GameAssemblyPath)/Fusion.Runtime.dll</HintPath>
-        </Reference>
         <Reference Include="Newtonsoft.Json">
           <HintPath>$(GameAssemblyPath)/Newtonsoft.Json.dll</HintPath>
         </Reference>
