@@ -20,6 +20,7 @@ using ComputerInterface.Views.Warnings;
 using GorillaExtensions;
 using GorillaNetworking;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 #if MELONLOADER
 using MelonLoader;
 #endif
@@ -208,13 +209,24 @@ public class Main : MonoBehaviourTick {
             List<PluginResponse> plugins = JsonConvert.DeserializeObject<List<PluginResponse>>(json) ?? [];
             PluginResponse computerInterface = plugins.Find(plugin => plugin.PluginGuid == Constants.Guid);
 
+            JToken updateType = computerInterface.ExtraData["update_type"];
+
+            // This should never be null, if it is then something has gone wrong on the backend. -DecalFree
+            if (updateType == null)
+                return;
+
             if (!Version.TryParse(computerInterface.PluginVersion, out Version latestVersion))
                 return;
 
             Logging.Info($"Using Computer Interface v{PluginCore.CurrentModLoader.ModVersion} | Latest: {latestVersion}");
 
             if (latestVersion > currentVersion)
-                SwitchComputerView(_warningView, [ new WarningView.GeneralWarning($"Computer Interface version {latestVersion} is now available!\n\nUpdate Type: {computerInterface.ExtraData["update_type"]}") ]);
+                SwitchComputerView(_warningView,
+                [
+                    new WarningView.GeneralWarning(
+                        $"Computer Interface version {latestVersion} is now available!\n\nUpdate Type: {updateType}",
+                        !updateType.ToString().Equals("Required"))
+                ]);
         }
         catch (Exception exception) {
             Logging.Error($"Computer Interface failed to check its version: {exception.Message}");
@@ -414,9 +426,9 @@ public class Main : MonoBehaviourTick {
         }
     }
 
-    private void SwitchComputerView(ComputerView computerView, object[] arguments) => SwitchComputerView(null, computerView.GetType(), arguments);
+    internal void SwitchComputerView(ComputerView computerView, object[] arguments) => SwitchComputerView(null, computerView.GetType(), arguments);
 
-    private ComputerView GetOrCreateComputerView(Type type) {
+    internal ComputerView GetOrCreateComputerView(Type type) {
         if (_cachedComputerViews.TryGetValue(type, out ComputerView computerView))
             return computerView;
 

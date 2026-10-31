@@ -19,10 +19,16 @@ internal class WarningView : ComputerView {
 
         stringBuilder.AppendLine(_currentWarning.WarningMessage);
 
+        if (_currentWarning.CanBeIgnored)
+            stringBuilder.AppendLines(2).AppendClr("* Press Back to ignore.", "ffffff50").AppendLine();
+
         return stringBuilder.ToString();
     }
 
     public override void OnButtonPressed(EKeyboardButton pressedButton) {
+        if (!_currentWarning.CanBeIgnored)
+            return;
+
         switch (pressedButton) {
             case EKeyboardButton.Back:
                 ReturnToMainMenu();
@@ -30,15 +36,21 @@ internal class WarningView : ComputerView {
         }
     }
 
-    public class GeneralWarning(string message) : IWarning {
+    public class GeneralWarning(string message, bool canBeIgnored) : IWarning {
         public string WarningMessage => message;
+
+        public bool CanBeIgnored => canBeIgnored;
     }
 
     public class OutdatedWarning : IWarning {
         public string WarningMessage => "You aren't on the latest version of Gorilla Tag, please update your game to continue playing with others.";
+
+        public bool CanBeIgnored => false;
     }
 
     public class NoInternetWarning : IWarning {
         public string WarningMessage => "You aren't connected to an internet connection, please connect to a valid connection to continue playing with others.";
+
+        public bool CanBeIgnored => true;
     }
 }

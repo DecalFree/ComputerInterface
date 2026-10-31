@@ -1,8 +1,8 @@
 ﻿#if BEPINEX
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using BepInEx;
 using BepInEx.Bootstrap;
@@ -11,7 +11,6 @@ using ComputerInterface.Enumerations;
 using ComputerInterface.Extensions;
 using ComputerInterface.Interfaces;
 using ComputerInterface.Models;
-using HarmonyLib;
 
 namespace ComputerInterface.Views;
 
@@ -22,44 +21,6 @@ internal class ModListEntry : IComputerViewEntry {
 }
 
 internal class ModListView : ComputerView {
-    internal class ModListItem {
-        private readonly CIConfig _config;
-
-        public PluginInfo PluginInfo { get; private set; }
-        public bool Supported { get; private set; }
-
-        public ModListItem(PluginInfo pluginInfo, CIConfig config) {
-            _config = config;
-            PluginInfo = pluginInfo;
-            Supported = DoesModImplementFeature();
-        }
-
-        private bool DoesModImplementFeature() {
-            MethodInfo onEnable = AccessTools.Method(PluginInfo.Instance.GetType(), "OnEnable");
-            MethodInfo onDisable = AccessTools.Method(PluginInfo.Instance.GetType(), "OnDisable");
-            return onEnable != null && onDisable != null;
-        }
-
-        private void EnableMod() {
-            PluginInfo.Instance.enabled = true;
-            _config.RemoveDisabledMod(PluginInfo.Metadata.GUID);
-        }
-
-        private void DisableMod() {
-            PluginInfo.Instance.enabled = false;
-            _config.AddDisabledMod(PluginInfo.Metadata.GUID);
-        }
-
-        public void ToggleMod() {
-            if (PluginInfo.Instance.enabled) {
-                DisableMod();
-            }
-            else {
-                EnableMod();
-            }
-        }
-    }
-
     private readonly ModListItem[] _plugins;
 
     private readonly UIElementPageHandler<ModListItem> _pageHandler = new() {
@@ -71,7 +32,7 @@ internal class ModListView : ComputerView {
     public ModListView() {
         IEnumerable<PluginInfo> pluginInfos = Chainloader.PluginInfos.Values.Where(plugin => !plugin.Metadata.GUID.Contains(Constants.Guid));
         _plugins = [
-            .. pluginInfos.Select(plugin => new ModListItem(plugin, PluginCore.CIConfig)).OrderBy(x => !x.Supported)
+            .. pluginInfos.Select(plugin => new ModListItem(plugin, PluginCore.CIConfig)).OrderBy(x => !x.IsSupported)
         ];
 
         _selectionHandler = new UISelectionHandler(EKeyboardButton.Up, EKeyboardButton.Down, EKeyboardButton.Enter) {
@@ -84,7 +45,7 @@ internal class ModListView : ComputerView {
     }
 
     private void SelectMod(int index) {
-        if (_plugins[index].Supported)
+        if (_plugins[index].IsSupported)
             _plugins[index].ToggleMod();
 
         UpdateViewScreen();
@@ -96,7 +57,7 @@ internal class ModListView : ComputerView {
         stringBuilder.BeginColor("ffffff50").Append("== ").EndColor();
         stringBuilder.Append($"Mod Status").BeginColor("ffffff50").Append(" ==").EndColor().AppendLine();
 
-        string labelContents = $"{_plugins.Length} mod{(_plugins.Length == 1 ? "" : "s")} loaded, {_plugins.Count(a => a.Supported)} toggleable mod{(_plugins.Count(a => a.Supported) == 1 ? "" : "s")} loaded";
+        string labelContents = $"{_plugins.Length} mod{(_plugins.Length == 1 ? "" : "s")} loaded, {_plugins.Count(a => a.IsSupported)} toggleable mod{(_plugins.Count(a => a.IsSupported) == 1 ? "" : "s")} loaded";
         stringBuilder.Append($"<size=40><margin=0.55em>{labelContents}</margin></size>").Append("\n<size=24> </size>");
 
         const string enabledPrefix = "<color=#00ff00> + </color>";
@@ -108,12 +69,11 @@ internal class ModListView : ComputerView {
         _pageHandler.EnumerateElements((plugin, index) => {
             stringBuilder.AppendLine();
             stringBuilder.Append(plugin.PluginInfo.Instance.enabled ? enabledPrefix : disabledPrefix);
-            if (!plugin.Supported)
+            if (!plugin.IsSupported)
                 stringBuilder.BeginColor(unsupportedColor);
             stringBuilder.Append(_selectionHandler.GetIndicatedText(index, lineIndex, plugin.PluginInfo.Metadata.Name));
-            if (!plugin.Supported)
+            if (!plugin.IsSupported)
                 stringBuilder.EndColor();
-            // stringBuilder.Append(plugin.PluginInfo.Instance.enabled ? enabledPrefix : disabledPrefix);
         });
 
         stringBuilder.AppendLines(2);
@@ -137,4 +97,5 @@ internal class ModListView : ComputerView {
         }
     }
 }
+
 #endif

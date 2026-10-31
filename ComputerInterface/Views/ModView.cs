@@ -1,4 +1,5 @@
 ﻿#if BEPINEX
+
 using System.Text;
 using BepInEx;
 using ComputerInterface.Behaviors.UI;
@@ -9,7 +10,7 @@ using ComputerInterface.Models;
 namespace ComputerInterface.Views;
 
 internal class ModView : ComputerView {
-    private ModListView.ModListItem _plugin;
+    private ModListItem _plugin;
 
     private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down, EKeyboardButton.Enter) {
         MaxIndex = 1
@@ -18,7 +19,7 @@ internal class ModView : ComputerView {
     public ModView() => _selectionHandler.OnSelected += OnOptionSelected;
 
     private void OnOptionSelected(int index) {
-        if (!_plugin.Supported)
+        if (!_plugin.IsSupported)
             return;
 
         switch (index) {
@@ -43,7 +44,7 @@ internal class ModView : ComputerView {
         if (arguments == null || arguments.Length == 0)
             return;
 
-        _plugin = (ModListView.ModListItem)arguments[0];
+        _plugin = (ModListItem)arguments[0];
     }
 
     protected override string GetViewText() {
@@ -59,7 +60,7 @@ internal class ModView : ComputerView {
         stringBuilder.Append(GetSelectionString(1, "[")).Append("<color=#ff7C7C>Disabled</color>").Append(GetSelectionString(1, "]")).AppendLine();
         stringBuilder.AppendLine().AppendLine();
 
-        if (!_plugin.Supported) {
+        if (!_plugin.IsSupported) {
             stringBuilder.BeginCenter().AppendClr("This mod doesn't support toggling between Enabled/Disabled states.", "ff505050").EndAlign();
             return stringBuilder.ToString();
         }
@@ -82,4 +83,5 @@ internal class ModView : ComputerView {
         }
     }
 }
+
 #endif
