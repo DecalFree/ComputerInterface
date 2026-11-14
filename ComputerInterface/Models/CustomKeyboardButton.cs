@@ -13,8 +13,6 @@ public class CustomKeyboardButton : GorillaTriggerBox {
     public EKeyboardButton KeyboardButton { get; private set; }
     public TextMeshPro KeyboardTextMesh { get; private set; }
 
-    public float pressTime;
-
     public bool isFunctionKey;
 
     private bool _isOnCooldown;
@@ -27,7 +25,7 @@ public class CustomKeyboardButton : GorillaTriggerBox {
 
     private void Awake() {
         enabled = false;
-        _material = GetComponent<MeshRenderer>().material;
+        _material = transform.GetComponentInChildren<MeshRenderer>().material;
         _originalColor = _material.color;
         _collider = GetComponent<BoxCollider>();
     }
@@ -58,7 +56,7 @@ public class CustomKeyboardButton : GorillaTriggerBox {
         if (_material == null) {
             _originalColor = buttonColor;
 
-            Renderer baseRenderer = GetComponent<Renderer>();
+            Renderer baseRenderer = transform.Find("Cube").GetComponent<Renderer>();
             if (baseRenderer.material == null) {
                 _material = new Material(Shader.Find("Legacy Shaders/Diffuse")) {
                     color = buttonColor

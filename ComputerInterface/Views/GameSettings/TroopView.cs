@@ -39,7 +39,7 @@ internal class TroopView : ComputerView {
             stringBuilder.AppendLine($"Players In Troop: {Mathf.Max(1, GameInterfaceService.TroopPopulation)}");
 
             stringBuilder.AppendLines(4).AppendClr($"* {(GameInterfaceService.TroopQueueActive ? "Press Option 2 for default queue." : "Press Option 1 for troop queue.")}", "ffffff50").AppendLine();
-            stringBuilder.AppendClr("* Press Option 3 to leave your troop.", "ffffff50").AppendLine();
+            stringBuilder.AppendClr("* Press Option 4 to leave your troop.", "ffffff50").AppendLine();
         }
         else {
             stringBuilder.BeginColor("ffffff50").Append("> ").EndColor().Append(_textInputHandler.Text).AppendClr("_", "ffffff50");
@@ -60,7 +60,7 @@ internal class TroopView : ComputerView {
                 GameInterfaceService.Queue = "DEFAULT";
                 UpdateViewScreen();
                 break;
-            case EKeyboardButton.Option3:
+            case EKeyboardButton.Option4:
                 GameInterfaceService.LeaveTroop();
                 UpdateViewScreen();
                 break;

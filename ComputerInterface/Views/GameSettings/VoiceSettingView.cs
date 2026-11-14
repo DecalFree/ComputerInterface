@@ -9,7 +9,7 @@ namespace ComputerInterface.Views.GameSettings;
 
 internal class VoiceSettingView : ComputerView {
     private readonly UISelectionHandler _selectionHandler = new(EKeyboardButton.Up, EKeyboardButton.Down) {
-        MaxIndex = 1
+        MaxIndex = 2
     };
 
     public VoiceSettingView() => _selectionHandler.ConfigureSelectionIndicator($"<color=#{PrimaryColor}> ></color> ", "", "   ", "");
@@ -26,6 +26,7 @@ internal class VoiceSettingView : ComputerView {
         stringBuilder.AppendLine("Voice Type: ");
         stringBuilder.Append(_selectionHandler.GetIndicatedText(0, "Human Voices")).AppendLine();
         stringBuilder.Append(_selectionHandler.GetIndicatedText(1, "Monke Voices")).AppendLine();
+        stringBuilder.Append(_selectionHandler.GetIndicatedText(2, "Mute All")).AppendLine();
 
         stringBuilder.AppendLines(4).AppendClr("* Choose which type of voice you would like to both hear and speak.", "ffffff50").AppendLine();
 
@@ -39,7 +40,17 @@ internal class VoiceSettingView : ComputerView {
                 break;
             default:
                 if (_selectionHandler.HandleButtonPress(pressedButton)) {
-                    GameInterfaceService.VoiceChatOn = _selectionHandler.CurrentSelectionIndex == 0;
+                    switch (_selectionHandler.CurrentSelectionIndex) {
+                        case 0:
+                            GameInterfaceService.VoiceChatOn = true;
+                            break;
+                        case 1:
+                            GameInterfaceService.VoiceChatOn = false;
+                            break;
+                        case 2:
+                            GameInterfaceService.MuteAllVoices();
+                            break;
+                    }
                     UpdateViewScreen();
                 }
                 break;

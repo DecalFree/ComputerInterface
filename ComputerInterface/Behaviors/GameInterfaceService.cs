@@ -319,6 +319,12 @@ public static class GameInterfaceService {
         set => Computer.InvokeMethod("SetVoice", value, true);
     }
 
+    public static void MuteAllVoices() {
+        Computer.voiceChatOn = "OFF";
+        PlayerPrefs.SetString("voiceChatOn", "OFF");
+        PlayerPrefs.Save();
+    }
+
     #endregion
 
     #region AutoMute Services

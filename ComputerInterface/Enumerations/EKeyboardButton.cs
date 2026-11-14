@@ -42,6 +42,8 @@ public enum EKeyboardButton {
     Option1,
     Option2,
     Option3,
+    Option4,
+    None,
 
     // Custom buttons
     Left,

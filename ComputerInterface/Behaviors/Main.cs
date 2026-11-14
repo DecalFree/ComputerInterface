@@ -100,7 +100,7 @@ public class Main : MonoBehaviourTick {
         _cachedComputerViews.Add(typeof(MainMenuView), _mainMenuView);
 
         if (!GameInterfaceService.Computer.initialized)
-            GameInterfaceService.Computer.InvokeMethod("Initialise");
+            GameInterfaceService.Computer.InvokeMethod("Initialize");
         GameInterfaceService.Computer.enabled = false;
 
         _classicMonitorScreen = await AssetLoader.LoadAsset<GameObject>("Classic Monitor Screen");
@@ -284,7 +284,6 @@ public class Main : MonoBehaviourTick {
         OnCustomTerminalPrepared?.Invoke(computerTerminal);
     }
 
-    // TODO: Fix some text not appearing on certain keys. This seems to be a positioning issue caused by the game itself. -DecalFree
     private void InitializeKeyboard(GorillaComputerTerminal computerTerminal) {
         _keyboardButtons = [];
 
@@ -295,20 +294,18 @@ public class Main : MonoBehaviourTick {
             nameToEnum.Add(button, Enum.Parse<EKeyboardButton>(enumString));
         }
 
-        GorillaKeyboardButton[] buttonArray = computerTerminal.transform.parent?.parent?.Find("GorillaComputerObject")?.GetComponentsInChildren<GorillaKeyboardButton>(true);
-        buttonArray ??= computerTerminal.transform.parent?.Find("GorillaComputerObject")?.GetComponentsInChildren<GorillaKeyboardButton>(true);
-        buttonArray ??= computerTerminal.GetComponentsInChildren<GorillaKeyboardButton>(true);
+        GorillaKeyboardButton[] buttonArray = computerTerminal.GetComponentsInChildren<GorillaKeyboardButton>(true);
 
         foreach (GorillaKeyboardButton button in buttonArray) {
-            if (button.characterString is "up" or "down") {
-                button.GetComponentInChildren<MeshRenderer>(true).material.color = new Color(0.1f, 0.1f, 0.1f);
-                button.GetComponentInChildren<MeshFilter>().mesh = _cubeMesh;
-                button.transform.localPosition -= new Vector3(0f, 0.6f, 0f);
-                DestroyImmediate(button.GetComponent<BoxCollider>());
-                if (FindText(button.gameObject, button.name + "text")?.GetComponent<TextMeshPro>() is { } arrowBtnText)
-                    DestroyImmediate(arrowBtnText);
+            switch (button.characterString.ToLower()) {
+                case "up" or "down" or "":
+                    DestroyImmediate(button.gameObject);
 
-                continue;
+                    continue;
+                case "delete" or "enter":
+                    button.transform.localPosition += new Vector3(-0.04f, 0f, 0f);
+
+                    break;
             }
 
             if (!nameToEnum.TryGetValue(button.characterString.ToLower(), out EKeyboardButton keyboardButton))
@@ -316,11 +313,12 @@ public class Main : MonoBehaviourTick {
 
             if (FindText(button.gameObject) is not { } buttonTextMesh)
                 continue;
-            CustomKeyboardButton customButton = button.gameObject.AddComponent<CustomKeyboardButton>();
-            customButton.pressTime = button.GetField<float>("pressTime");
-            customButton.isFunctionKey = button.functionKey;
 
-            button.GetComponent<MeshFilter>().mesh = _cubeMesh;
+            CustomKeyboardButton customButton = button.gameObject.AddComponent<CustomKeyboardButton>();
+            customButton.isFunctionKey = button.functionKey;
+            customButton.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
+
+            button.transform.GetChild(0).GetComponent<MeshFilter>().mesh = _cubeMesh;
             DestroyImmediate(button);
 
             customButton.InitializeCustomButton(keyboardButton, buttonTextMesh);
@@ -334,63 +332,45 @@ public class Main : MonoBehaviourTick {
         if (keyboardRenderer)
             keyboardRenderer.material.color = new Color(0.3f, 0.3f, 0.3f);
 
-        CustomKeyboardButton enterKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.Enter);
-        CustomKeyboardButton mKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.M);
+        CustomKeyboardButton optionFourKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.Option4);
         CustomKeyboardButton deleteKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.Delete);
+        CustomKeyboardButton lKey = _keyboardButtons.Last(x => x.KeyboardButton == EKeyboardButton.L);
 
-        CreateKeyboardButton(enterKey.gameObject, "Space", new Vector3(2.6f, 0f, 3f), EKeyboardButton.Space, "SPACE");
-        CreateKeyboardButton(deleteKey.gameObject, "Back", new Vector3(0f, 0f, -29.8f), EKeyboardButton.Back, "BACK", ColorUtility.TryParseHtmlString("#8787e0", out Color backButtonColor) ? backButtonColor : Color.white);
+        CreateKeyboardButton(optionFourKey.gameObject, "Space", new Vector3(0.7f, 0f, 0f), EKeyboardButton.Space, "SPACE", parent: deleteKey.transform.parent);
+        CreateKeyboardButton(deleteKey.gameObject, "Back", new Vector3(0.625f, 0f, 0f), EKeyboardButton.Back, "BACK", ColorUtility.TryParseHtmlString("#8787e0", out Color backButtonColor) ? backButtonColor : Color.white);
 
         bool arrowColorExists = ColorUtility.TryParseHtmlString("#abdbab", out Color arrowKeyButtonColor);
 
-        CustomKeyboardButton leftKey = CreateKeyboardButton(mKey.gameObject, "Left", new Vector3(0f, 0f, 5.6f), EKeyboardButton.Left, "<", arrowColorExists ? arrowKeyButtonColor : Color.white);
-        CustomKeyboardButton downKey = CreateKeyboardButton(leftKey.gameObject, "Down", new Vector3(0f, 0f, 2.3f), EKeyboardButton.Down, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
-        CreateKeyboardButton(downKey.gameObject, "Right", new Vector3(0f, 0f, 2.3f), EKeyboardButton.Right, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
-        CustomKeyboardButton upKey = CreateKeyboardButton(downKey.gameObject, "Up", new Vector3(-2.3f, 0f, 0f), EKeyboardButton.Up, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
-
-        Transform downKeyText = FindText(downKey.gameObject).transform;
-        downKeyText.localPosition -= new Vector3(0f, 0f, 0.05f);
-        downKeyText.localEulerAngles += new Vector3(0f, 0f, -90f);
+        CustomKeyboardButton upKey = CreateKeyboardButton(lKey.gameObject, "Up", new Vector3(-0.05f, 0f, 0f), EKeyboardButton.Up, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
+        CustomKeyboardButton downKey = CreateKeyboardButton(upKey.gameObject, "Down", new Vector3(0f, 0f, 0.05f), EKeyboardButton.Down, ">", arrowColorExists ? arrowKeyButtonColor : Color.white);
+        CreateKeyboardButton(downKey.gameObject, "Left", new Vector3(0.05f, 0f, 0f), EKeyboardButton.Left, "<", arrowColorExists ? arrowKeyButtonColor : Color.white, deleteKey.transform.parent?.parent?.parent?.Find("Arrows"));
+        CreateKeyboardButton(downKey.gameObject, "Right", new Vector3(-0.05f, 0f, 0f), EKeyboardButton.Right, ">", arrowColorExists ? arrowKeyButtonColor : Color.white, deleteKey.transform.parent?.parent?.parent?.Find("Arrows"));
 
         Transform upKeyText = FindText(upKey.gameObject).transform;
-        upKeyText.localPosition += new Vector3(0f, 0f, 0.05f);
         upKeyText.localEulerAngles += new Vector3(0f, 0f, 90f);
+
+        Transform downKeyText = FindText(downKey.gameObject).transform;
+        downKeyText.localEulerAngles += new Vector3(0f, 0f, -90f);
     }
 
-    private TextMeshPro FindText(GameObject button, string keyName = null) {
+    private TextMeshPro FindText(GameObject button) {
         // Logging.Info($"Replacing key {button.name} / {name}");
         if (button.GetComponent<TextMeshPro>() is { } text)
             return text;
 
-        if (keyName.IsNullOrWhiteSpace())
-            keyName = button.name.Replace(" ", "");
-
-        if (keyName!.Contains("enter"))
-            keyName = "enter";
-
-        // Properly designed maps
-        Transform keyTextTransform = button.transform.parent?.parent?.Find($"Text/{keyName}");
-
-        // Custom Maps
-        keyTextTransform ??= button.transform.parent?.parent?.parent?.parent?.parent?.transform.Find($"UIParent/Text/{keyName}");
-
-        // Forest
-        keyTextTransform??= button.transform.parent?.parent?.parent?.parent?.parent?.parent?.parent?.Find(keyName);
+        Transform keyTextTransform = button.transform.Find("Text (TMP)");
 
         return keyTextTransform?.GetComponent<TextMeshPro>();
     }
 
-    private CustomKeyboardButton CreateKeyboardButton(GameObject prefab, string objectName, Vector3 offset, EKeyboardButton keyboardButton, string label = null, Color? color = null) {
-        GameObject newKey = Instantiate(prefab.gameObject, prefab.transform.parent);
+    private CustomKeyboardButton CreateKeyboardButton(GameObject prefab, string objectName, Vector3 offset, EKeyboardButton keyboardButton, string label = null, Color? color = null, Transform parent = null) {
+        GameObject newKey = Instantiate(prefab.gameObject, parent != null ? parent : prefab.transform.parent, true);
         newKey.name = objectName;
         newKey.transform.localPosition += offset;
-        newKey.GetComponent<MeshFilter>().mesh = _cubeMesh;
+        newKey.transform.Find("Cube").GetComponent<MeshFilter>().mesh = _cubeMesh;
         newKey.GetComponent<Collider>().enabled = true;
 
-        TextMeshPro keyTextMesh = FindText(prefab, prefab.name);
-        TextMeshPro newKeyTextMesh = Instantiate(keyTextMesh.gameObject, keyTextMesh.gameObject.transform.parent).GetComponent<TextMeshPro>();
-        newKeyTextMesh.name = objectName;
-        newKeyTextMesh.transform.localPosition += offset;
+        TextMeshPro keyTextMesh = FindText(newKey);
 
         CustomKeyboardButton customKeyboardButton = newKey.GetComponent<CustomKeyboardButton>();
 
@@ -398,10 +378,10 @@ public class Main : MonoBehaviourTick {
             customKeyboardButton.InitializeCustomButton(keyboardButton);
         }
         else if (color.HasValue) {
-            customKeyboardButton.InitializeCustomButton(keyboardButton, newKeyTextMesh, label, color.Value);
+            customKeyboardButton.InitializeCustomButton(keyboardButton, keyTextMesh, label, color.Value);
         }
         else {
-            customKeyboardButton.InitializeCustomButton(keyboardButton, newKeyTextMesh, label);
+            customKeyboardButton.InitializeCustomButton(keyboardButton, keyTextMesh, label);
         }
 
         _keyboardButtons.Add(customKeyboardButton);
